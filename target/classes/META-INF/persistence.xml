@@ -1,0 +1,28 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             version="3.0">
+    <persistence-unit name="tfgPU" transaction-type="RESOURCE_LOCAL">
+        <!-- Clases de modelo -->
+        <class>es.etg.dam.tfg.app.modelo.Videojuego</class>
+        <class>es.etg.dam.tfg.app.modelo.Genero</class>
+        <class>es.etg.dam.tfg.app.modelo.Consola</class>
+        <class>es.etg.dam.tfg.app.modelo.Fabricante</class>
+        <class>es.etg.dam.tfg.app.modelo.Estado</class>
+        <class>es.etg.dam.tfg.app.modelo.Ubicacion</class>
+        <class>es.etg.dam.tfg.app.modelo.Usuario</class>
+        <class>es.etg.dam.tfg.app.modelo.Compania</class>
+
+<properties>
+    <!-- Conexión a bbdd neon-->
+    <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://ep-frosty-queen-a29f0y10-pooler.eu-central-1.aws.neon.tech:5432/neondb?sslmode=require" />
+    <property name="jakarta.persistence.jdbc.user" value="neondb_owner" />
+    <property name="jakarta.persistence.jdbc.password" value="npg_Ycs4A9NewziR" />
+    <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+        
+    <!-- Configuración de Hibernate -->
+    <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+    <property name="hibernate.hbm2ddl.auto" value="update"/>
+    <property name="hibernate.show_sql" value="true"/>
+</properties>
+
+    </persistence-unit>
+</persistence>
