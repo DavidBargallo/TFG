@@ -1,27 +1,23 @@
 package es.etg.dam.tfg.app.data.dao;
 
-import es.etg.dam.tfg.app.modelo.Videojuego;
-
+import es.etg.dam.tfg.app.modelo.Consola;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.util.List;
 
-public class VideojuegoDAO {
+public class ConsolaDAO {
 
     private final EntityManager em;
 
-    public VideojuegoDAO(EntityManager em) {
+    public ConsolaDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void insertarVideojuego(Videojuego videojuego) {
+    public void insertarConsola(Consola consola) {
         EntityTransaction transaction = em.getTransaction();
         try {
             transaction.begin();
-
-            // Persistir el Videojuego y sus relaciones muchos a muchos se manejan automáticamente
-            em.persist(videojuego);
-
+            em.persist(consola);
             transaction.commit();
         } catch (Exception e) {
             if (transaction.isActive()) {
@@ -31,23 +27,20 @@ public class VideojuegoDAO {
         }
     }
 
-    public Videojuego obtenerVideojuegoPorId(int id) {
-        return em.find(Videojuego.class, id);
+    public Consola obtenerConsolaPorId(int id) {
+        return em.find(Consola.class, id);
     }
 
-    public List<Videojuego> obtenerTodosLosVideojuegos() {
-        String jpql = "SELECT v FROM Videojuego v";
-        return em.createQuery(jpql, Videojuego.class).getResultList();
+    public List<Consola> obtenerTodasLasConsolas() {
+        String jpql = "SELECT c FROM Consola c";
+        return em.createQuery(jpql, Consola.class).getResultList();
     }
 
-    public void actualizarVideojuego(Videojuego videojuego) {
+    public void actualizarConsola(Consola consola) {
         EntityTransaction transaction = em.getTransaction();
         try {
             transaction.begin();
-
-            // Usamos merge para actualizar
-            em.merge(videojuego);
-
+            em.merge(consola);
             transaction.commit();
         } catch (Exception e) {
             if (transaction.isActive()) {
@@ -57,16 +50,14 @@ public class VideojuegoDAO {
         }
     }
 
-    public void eliminarVideojuego(int id) {
+    public void eliminarConsola(int id) {
         EntityTransaction transaction = em.getTransaction();
         try {
             transaction.begin();
-
-            Videojuego videojuego = em.find(Videojuego.class, id);
-            if (videojuego != null) {
-                em.remove(videojuego);
+            Consola consola = em.find(Consola.class, id);
+            if (consola != null) {
+                em.remove(consola);
             }
-
             transaction.commit();
         } catch (Exception e) {
             if (transaction.isActive()) {
