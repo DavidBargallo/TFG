@@ -7,7 +7,10 @@ import lombok.ToString;
 import java.util.Set;
 
 @Entity
-@Table(name = "genero")
+@Table(
+    name = "genero",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"nombre"})
+)
 @Data
 @ToString(exclude = "videojuegos") 
 public class Genero {
@@ -16,7 +19,7 @@ public class Genero {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
     @Column(name = "descripcion")
@@ -25,6 +28,7 @@ public class Genero {
     @ManyToMany(mappedBy = "generos")
     private Set<Videojuego> videojuegos;
 }
+
 
 
 

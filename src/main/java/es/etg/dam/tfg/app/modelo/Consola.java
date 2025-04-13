@@ -6,7 +6,11 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@Table(name = "consola")
+@Table(
+    //Para que no se repitan consolas.
+    name = "consola",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"nombre", "fecha_lanzamiento"})
+)
 @Data 
 public class Consola {
 
@@ -14,17 +18,19 @@ public class Consola {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(nullable = false)
     private String nombre;
 
     @ManyToOne
     @JoinColumn(name = "fabricante_id")  
     private Fabricante fabricante;
 
-    @Column(name = "fecha_lanzamiento")
+    @Column(name = "fecha_lanzamiento", nullable = false)
     private LocalDate fechaLanzamiento;
 
     @ManyToMany(mappedBy = "consolas") 
     private Set<Videojuego> videojuegos;
 }
+
 
 

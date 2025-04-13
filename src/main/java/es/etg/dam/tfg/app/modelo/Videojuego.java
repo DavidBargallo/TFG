@@ -11,7 +11,11 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@Table(name = "videojuego")
+@Table(
+    //Para no repetir videojuego.
+    name = "videojuego",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"nombre", "fecha_lanzamiento"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,13 +26,13 @@ public class Videojuego {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
     @Column(name = "precio")
     private BigDecimal precio;
 
-    @Column(name = "fecha_lanzamiento")
+    @Column(name = "fecha_lanzamiento", nullable = false)
     private LocalDate fechaLanzamiento;
 
     @ManyToOne
@@ -62,4 +66,5 @@ public class Videojuego {
     )
     private Set<Consola> consolas;
 }
+
 
