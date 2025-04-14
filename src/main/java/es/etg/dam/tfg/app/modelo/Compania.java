@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "compania")
+@Table(
+    name = "compania",
+    uniqueConstraints = @UniqueConstraint(columnNames = { "nombre", "pais" })
+)
 @Data
 public class Compania {
 
@@ -12,7 +15,9 @@ public class Compania {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(nullable = false)
     private String nombre;
+
     private String pais;
 
     @Column(name = "anio_fundacion")

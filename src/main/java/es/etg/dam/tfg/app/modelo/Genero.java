@@ -1,7 +1,11 @@
 package es.etg.dam.tfg.app.modelo;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Set;
@@ -11,12 +15,17 @@ import java.util.Set;
     name = "genero",
     uniqueConstraints = @UniqueConstraint(columnNames = {"nombre"})
 )
-@Data
-@ToString(exclude = "videojuegos") 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "videojuegos")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Genero {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private int id;
 
     @Column(name = "nombre", nullable = false)
@@ -28,6 +37,7 @@ public class Genero {
     @ManyToMany(mappedBy = "generos")
     private Set<Videojuego> videojuegos;
 }
+
 
 
 

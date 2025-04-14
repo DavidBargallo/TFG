@@ -12,7 +12,6 @@ import java.util.Set;
 
 @Entity
 @Table(
-    //Para no repetir videojuego.
     name = "videojuego",
     uniqueConstraints = @UniqueConstraint(columnNames = {"nombre", "fecha_lanzamiento"})
 )
