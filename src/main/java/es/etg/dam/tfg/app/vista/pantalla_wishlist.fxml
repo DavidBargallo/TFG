@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Copyright (c) 2015, 2019, Gluon and/or its affiliates.
+  All rights reserved. Use is subject to license terms.
+
+  This file is available and licensed under the following license:
+  
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+  
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the distribution.
+  - Neither the name of Oracle Corporation nor the names of its
+    contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox id="vbox_wishlist" fx:id="vbox_wishlist" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+      <MenuBar fx:id="menu_bar_wishlist">
+         <menus>
+            <Menu fx:id="menu_cuenta" mnemonicParsing="false" text="Cuenta">
+               <items>
+                  <MenuItem fx:id="men_item_perfil" mnemonicParsing="false" text="Perfil" />
+                  <MenuItem fx:id="men_item_cam_contr" mnemonicParsing="false" text="Cambiar contraseña" />
+                  <MenuItem fx:id="men_item_cerr_ses" mnemonicParsing="false" text="Cerrar sesión" />
+               </items>
+            </Menu>
+            <Menu fx:id="menu_wishlist" mnemonicParsing="false" text="Wishlist">
+               <items>
+                  <MenuItem fx:id="men_item_ver_wl" mnemonicParsing="false" text="Ver wishlist" />
+                  <MenuItem fx:id="men_item_exp_wl" mnemonicParsing="false" text="Exportar wishlist" />
+               </items>
+            </Menu>
+            <Menu fx:id="menu_juegos" mnemonicParsing="false" text="Juegos">
+               <items>
+                  <MenuItem fx:id="men_item_ver_juegos" mnemonicParsing="false" text="Ver juegos" />
+                  <MenuItem fx:id="men_item_exp_bib" mnemonicParsing="false" text="Exportar biblioteca" />
+               </items>
+            </Menu>
+         </menus>
+      </MenuBar>
+
+      <StackPane id="stack_pane_criterios" fx:id="stackpane_filtros" prefHeight="167.0" prefWidth="640.0">
+         <children>
+            <VBox id="vbox_criterios" fx:id="vbox_filtros" alignment="CENTER" prefHeight="163.0" prefWidth="554.0">
+               <children>
+                  <HBox fx:id="hbox_texto_wishlist" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="label_wishlist_expl" contentDisplay="CENTER" text="Añadir o consultar juegos de tu wishlist" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_nombre_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="505.0">
+                     <children>
+                        <Label fx:id="label_nombre_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="105.0" text="Nombre" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="textfield_nombre_wishlist" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_consola_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="505.0">
+                     <children>
+                        <Label fx:id="label_consola_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="105.0" text="Consola" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="combobox_consola_wishlist" prefHeight="6.0" prefWidth="148.0" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_company_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="629.0">
+                     <children>
+                        <Label fx:id="label_company_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="105.0" text="Compañia" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="textfield_company_wishlist" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_precio_max_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="505.0">
+                     <children>
+                        <Label fx:id="label_precio_max_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="124.0" text="Precio Máximo" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="textfield_precio_max_wishlist" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_ordenar_por_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="505.0">
+                     <children>
+                        <Label fx:id="label_ordenar_por_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="107.0" text="Ordenar por:" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="combobox_ordenar_por_wishlist" prefHeight="6.0" prefWidth="148.0" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_juegos_solo_wishlist" alignment="CENTER" prefHeight="38.0" prefWidth="629.0">
+                     <children>
+                        <Label fx:id="label_juegos_solo_wishlist" contentDisplay="CENTER" prefHeight="27.0" prefWidth="247.0" text="Ver solo juegos en tu wishlist" textAlignment="CENTER">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <CheckBox fx:id="checkbox_juegos_wishlist" mnemonicParsing="false" prefHeight="18.0" prefWidth="90.0" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbox_aplicar_filtros" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="button_aplicar_filtros" mnemonicParsing="false" prefHeight="26.0" prefWidth="346.0" text="Aplicar Filtros">
+                           <font>
+                              <Font name="Consolas" size="14.0" />
+                           </font>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
+
+      <ScrollPane fx:id="scrollPaneFichas" fitToWidth="true" prefHeight="600.0">
+    <content>
+        <TilePane fx:id="tilePaneFichas" hgap="10" prefColumns="4" prefWidth="600.0" tileAlignment="CENTER_LEFT" vgap="10">
+            <!-- Ejemplo de ficha de juego -->
+            <VBox fx:id="vbox_ficha_juego_wishlist" alignment="CENTER" prefHeight="180" prefWidth="130" spacing="5" style="-fx-background-color: #ffffff; -fx-border-color: #cccccc; -fx-padding: 10;">
+                <ImageView fx:id="imageview_portada_wishlist" fitHeight="66.0" fitWidth="76.0" preserveRatio="true" />
+                <Label fx:id="label_juego_wishlist" style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Juego" wrapText="true" />
+                <Label fx:id="label_consola_juego_wishlist" style="-fx-font-size: 12px;" text="PS4" />
+                  <Label fx:id="label_genero_juego_wishlist" text="JRPG" />
+                <Button fx:id="button_add_o_ver_wishlist" style="-fx-font-size: 11px;" text="Añadir a wishlist" />
+            </VBox>
+            <!-- Repítelo o genera desde el controlador -->
+        </TilePane>
+    </content>
+</ScrollPane>
+  </children>
+</VBox>

@@ -1,12 +1,38 @@
 package es.etg.dam.tfg.app;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.Parent;
+import javafx.stage.Stage;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationContext;
 
-@SpringBootApplication
-public class App {
+import es.etg.dam.tfg.ArranqueSpringBoot;
+
+public class App extends Application {
+
+    private ApplicationContext springContext;
+
+    @Override
+    public void init() {
+        springContext = new SpringApplicationBuilder(ArranqueSpringBoot.class).run();
+    }
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/es/etg/dam/tfg/app/vista/Login.fxml"));
+
+        loader.setControllerFactory(springContext::getBean);
+
+        Parent root = loader.load();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Iniciar sesión");
+        stage.show();
+    }
+
     public static void main(String[] args) {
-        SpringApplication.run(App.class, args);
+        launch(args);
     }
 }
 
