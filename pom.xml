@@ -135,12 +135,7 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>7.0.0.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>       
+        </dependency>      
     </dependencies>
 
     <build>
@@ -161,13 +156,13 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>es.etg.dam.tfg.programa.App</mainClass>
-                    <jvmArgs>
-                        --add-opens=java.base/java.lang=ALL-UNNAMED
-                        --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-                        --add-opens=java.base/java.util=ALL-UNNAMED
-                    </jvmArgs>
+                    <options>
+                        <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
+                        <option>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</option>
+                        <option>--add-opens=java.base/java.util=ALL-UNNAMED</option>
+                    </options>
                 </configuration>
-            </plugin>
+            </plugin>            
         </plugins>
     </build>
 </project>

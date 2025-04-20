@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 
-import es.etg.dam.tfg.ArranqueSpringBoot;
+import es.etg.dam.tfg.programa.utils.ArranqueSpringBoot;
 
 public class App extends Application {
 
@@ -25,7 +25,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/es/etg/dam/tfg/app/vista/Login.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/es/etg/dam/tfg/programa/vista/Pantalla_Inicio.fxml"));
 
         loader.setControllerFactory(springContext::getBean);
 
