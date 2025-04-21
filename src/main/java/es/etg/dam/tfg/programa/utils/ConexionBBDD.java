@@ -16,7 +16,7 @@ public class ConexionBBDD {
     public void conectar() {
         try {
             em.getTransaction().begin();
-            System.out.println("Conexión a Neon establecida con éxito");
+            System.out.println("Conexión establecida");
             em.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
