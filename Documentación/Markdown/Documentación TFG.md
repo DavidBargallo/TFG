@@ -1,137 +1,222 @@
-
-# Anteproyecto aplicación gestión de videojuegos
+# Proyecto de Fin de Ciclo: Aplicación de Gestión de Videojuegos
 
 **David Bargalló Ortiz**  
-**Desarrollo de Aplicaciones Multiplataforma**  
-**07/04/2025**
-
-# Índice
-
-- [Anteproyecto aplicación gestión de videojuegos](#anteproyecto-aplicación-gestión-de-videojuegos)
-- [Índice](#índice)
-  - [1. Definición del problema](#1-definición-del-problema)
-  - [2. Planteamiento del proyecto](#2-planteamiento-del-proyecto)
-    - [¿Qué necesidades tiene el usuario?](#qué-necesidades-tiene-el-usuario)
-    - [Solución propuesta](#solución-propuesta)
-    - [Diseño de la aplicación](#diseño-de-la-aplicación)
-    - [Fase de implantación](#fase-de-implantación)
-    - [Pruebas](#pruebas)
-  - [3. Herramientas que usaremos](#3-herramientas-que-usaremos)
-  - [4. Objetivos](#4-objetivos)
-  - [5. Bibliografía](#5-bibliografía)
+**Ciclo Formativo de Grado Superior: Desarrollo de Aplicaciones Multiplataforma (DAM)**  
+**Curso 2024/2025**
 
 ---
 
-## 1. Definición del problema
+## Índice
 
-El objetivo de este proyecto es dar solución a la desorganización que muchas personas experimentan al gestionar su colección de videojuegos, tanto físicos como digitales, en diferentes plataformas. Se busca centralizar toda la información en una única aplicación, permitiendo una consulta rápida, filtrado avanzado, seguimiento de precios y ubicación física de los juegos.
-
-Además, se resolverán otros problemas como:
-- La descentralización de catálogos digitales entre múltiples plataformas.
-- La falta de visibilidad de complementos (DLCs) adquiridos o pendientes.
-- La dificultad para recordar la ubicación física de los juegos.
-- La imposibilidad de tener una visión global de la colección y wishlist.
-
----
-
-## 2. Planteamiento del proyecto
-
-### ¿Qué necesidades tiene el usuario?
-
-- Centralizar su colección de videojuegos en una única plataforma.
-- Filtrar la colección por diferentes parámetros (nombre, consola, precio, formato...).
-- Consultar DLCs de cada juego y si los posee.
-- Almacenar la ubicación física de los juegos físicos.
-- Añadir títulos a una wishlist con precios actualizados.
-- Exportar su colección y wishlist en formato PDF.
-- Ver estadísticas relevantes de sus juegos.
-
-### Solución propuesta
-
-La aplicación resolverá estas necesidades mediante:
-- Una base de datos que almacena toda la información relevante de los juegos, usuarios y relaciones entre ellos.
-- Una API para obtener bibliotecas de juegos por plataforma y para mantener actualizados los precios.
-- Interfaz gráfica intuitiva desarrollada con JavaFX y Scene Builder.
-- Filtros personalizados para buscar juegos específicos o gestionar la wishlist.
-- Exportación de la biblioteca y wishlist a PDF.
-- Acceso mediante login para permitir varios usuarios con sus propias bibliotecas (contraseña hasheada).
-
-### Diseño de la aplicación
-
-La aplicación contará con estas pantallas:
-
-1. **Pantalla de inicio de sesión**: acceso de usuarios con su nombre de usuario y contraseña.
-2. **Pantalla principal**: con:
-   - Los últimos juegos añadidos (se decidirá más adelante si serán 3, 5, 10...).
-   - Vista previa de la wishlist con precios (listview con el nombre del juego, la consola y precio, la wishlist tendrá una interfaz propia más detallada).
-   - Estadísticas destacadas (3-4 estadísticas como preview de la pantalla con todas las estadísticas).
-3. **Pantalla de biblioteca**: muestra en fichas todos los juegos del usuario (portada, nombre consola...). Al pulsar en una ficha, se abrirá una nueva ventana con información completa del juego (en la ficha habrá una especie de preview, la ficha entera será una ventana entera con todos los datos).
-4. **Pantalla de filtros**: para buscar juegos en la biblioteca o wishlist según los filtros seleccionados.
-5. **Pantalla de wishlist**: donde el usuario puede ver los juegos deseados, actualizar precios y ordenarlos por parámetros como consola o precio.
-6. **Pantalla de estadísticas**: visualización de estadísticas como número de juegos por plataforma, juegos por consola, juegos por género, etc.
-7. **Pantalla de configuración/cambio de contraseña**.
-8. **Pantalla de exportación de datos** (Aún no se sabe si una pantalla o un botón en la pantalla de la biblioteca).
-
-### Fase de implantación
-
-1. Diseño del modelo Entidad-Relación (ER) de la base de datos.
-2. Creación de la base de datos en línea usando Supabase (SQL).
-3. Creación de la interfaz de todas las pantallas en Scene Builder.
-4. Búsqueda e integración de APIs para obtener catálogos de juegos y precios actualizados.
-5. Desarrollo de la interfaz con JavaFX en Visual Studio Code.
-6. Programación de la lógica de negocio: conexión con la BBDD, tratamiento de datos, integración con API.
-7. Realización de pruebas unitarias, funcionales y de rendimiento.
-8. Elaboración de documentación técnica y manual de usuario (durante todo el desarrollo).
-
-### Pruebas
-
-- Verificación de todas las funcionalidades (CRUD de juegos, filtros, login, wishlist, estadísticas...).
-- Validación de conexiones con BBDD y APIs.
-- Comprobación de rendimiento con gran cantidad de datos.
-- Pruebas con usuarios reales para recoger feedback (si hay tiempo suficiente y se puede hacer).
+- [Proyecto de Fin de Ciclo: Aplicación de Gestión de Videojuegos](#proyecto-de-fin-de-ciclo-aplicación-de-gestión-de-videojuegos)
+  - [Índice](#índice)
+  - [1. Introducción](#1-introducción)
+  - [2. Descripción del problema](#2-descripción-del-problema)
+  - [3. Objetivos](#3-objetivos)
+    - [Objetivo general](#objetivo-general)
+    - [Objetivos específicos](#objetivos-específicos)
+  - [4. Diseño de la solución](#4-diseño-de-la-solución)
+    - [4.1 Arquitectura general](#41-arquitectura-general)
+    - [4.2 Diseño de la base de datos](#42-diseño-de-la-base-de-datos)
+    - [4.3 Diseño de la interfaz](#43-diseño-de-la-interfaz)
+  - [5. Desarrollo técnico](#5-desarrollo-técnico)
+    - [5.1 Tecnologías utilizadas](#51-tecnologías-utilizadas)
+    - [5.2 Estructura del proyecto](#52-estructura-del-proyecto)
+    - [5.3 Funcionalidades implementadas](#53-funcionalidades-implementadas)
+  - [6. Pruebas](#6-pruebas)
+  - [7. Manual de usuario](#7-manual-de-usuario)
+    - [Requisitos](#requisitos)
+    - [Pasos básicos](#pasos-básicos)
+  - [8. Manual técnico](#8-manual-técnico)
+    - [Requisitos de desarrollo](#requisitos-de-desarrollo)
+    - [Pasos para ejecutar](#pasos-para-ejecutar)
+  - [9. Conclusiones](#9-conclusiones)
+  - [10. Bibliografía](#10-bibliografía)
+  - [11. Anexos](#11-anexos)
 
 ---
 
-## 3. Herramientas que usaremos
+## 1. Introducción
 
-**(Este apartado está sujeto a cambios durante el desarrollo)**
-
-- **Sistema operativo:** Windows
-- **Tipo de aplicación:** Escritorio (JavaFX)
-- **IDE:** Visual Studio Code
-- **Lenguaje de programación:** Java
-- **Gestión de dependencias:** Maven
-- **Gestión de versión:** Git + GitHub
-- **Diseño de interfaz:** JavaFX + Scene Builder
-- **Base de datos:** Supabase (SQL en la nube)
-- **APIs utilizadas:**
-  - RAWG o alternativa para obtener bibliotecas de juegos y detalles.
-  - PriceCharting o alternativa para precios actualizados.
-- **Pruebas unitarias:** JUnit
-- **Pruebas de API:** Postman
+Este documento recoge el desarrollo del TFG, que es en una aplicación de escritorio para la gestión de colecciones de videojuegos. El objetivo de la aplicación es facilitar a los usuarios la organización, seguimiento y análisis de su biblioteca personal de videojuegos, ya sean físicos o digitales.
 
 ---
 
-## 4. Objetivos
+## 2. Descripción del problema
 
-- Permitir a los usuarios gestionar y consultar su colección de videojuegos.
-- Implementar un sistema de login y gestión por usuarios.
-- Añadir funcionalidades avanzadas como wishlist, seguimiento de precios, estadísticas y exportación.
-- Ofrecer una experiencia visual amigable mediante fichas gráficas y filtros intuitivos.
-- Integrar APIs externas para automatizar la carga de datos y actualización de precios.
-- Permitir la exportación de la colección en formato PDF.
-- Desarrollar pruebas automatizadas para asegurar la calidad del software.
+Muchos jugadores acumulan videojuegos en diferentes formatos y plataformas, lo que dificulta su organización. Esta aplicación busca centralizar toda esta información en un único lugar, resolviendo problemas como:
+
+- Desorganización de juegos físicos y digitales.
+- Falta de seguimiento de DLCs y complementos.
+- Dificultad para localizar juegos físicos.
+- Falta de estadísticas de los juegos que ha jugado.
+- No poder compartir la colección de juegos completa de todas las plataformas.
+- Conocer el precio de sus juegos y tener una wishlist
 
 ---
 
-## 5. Bibliografía
+## 3. Objetivos
 
-- ChatGPT. (n.d.). *ChatGPT*. Recuperado el X de abril de 2025, de [https://chatgpt.com/](https://chatgpt.com/)
-- Gemini. (n.d.). *Gemini*. Recuperado el X de abril de 2025, de [https://gemini.google.com/app](https://gemini.google.com/app)
-- Google. (n.d.). *Google*. Recuperado el X de abril de 2025, de [https://www.google.es/](https://www.google.es/)
-- Stack Overflow. (n.d.). *Stack Overflow*. Recuperado el X de abril de 2025, de [https://stackoverflow.com](https://stackoverflow.com)
-- YouTube. (n.d.). *YouTube*. Recuperado el X de abril de 2025, de [https://www.youtube.com/](https://www.youtube.com/)
-- RapidAPI. (n.d.). *RapidAPI*. Recuperado el X de abril de 2025, de [https://rapidapi.com/](https://rapidapi.com/)
-- Documentación oficial de Java, JavaFX, Scene Builder, SupaBase y Maven.
+### Objetivo general
 
+Desarrollar una aplicación de escritorio que permita a los usuarios gestionar su biblioteca de videojuegos de manera completa e intuitiva, además de poder seguir videojuegos que les interese con su precio.
 
+### Objetivos específicos
+
+- Crear un sistema de login.
+- Permitir añadir, editar, eliminar y filtrar videojuegos (por diferentes parámetros).
+- Gestionar wishlist de juegos con seguimiento de precios.
+- Mostrar estadísticas de la persona (género más jugado, consola más jugada...).
+- Llevar un registro de la uubicación física de cada juego.
+- Exportar la colección en formato PDF.
+- Conectar con APIs externas para importar datos o precios.
+
+---
+
+## 4. Diseño de la solución
+
+### 4.1 Arquitectura general
+
+La aplicación está dividida en varias capas siguiendo el patrón MVC (Modelo-Vista-Controlador), integrando además Spring Boot que se inicializa al arrancar la aplicación JavaFX. Esta estructura permite separar la lógica de negocio, la interfaz de usuario y el acceso a datos.
+
+<img src = ""/>
+
+---
+
+### 4.2 Diseño de la base de datos
+
+La base de datos está alojada en Neon (PostgreSQL en la nube). Aquí está el ER del proyecto:
+
+<img src = "fotos/EntidadRelacion.png"/>
+
+---
+
+### 4.3 Diseño de la interfaz
+
+Las interfaces gráficas se han desarrollado con JavaFX y Scene Builder. La navegación entre pantallas se realiza mediante controladores que cargan FXML y reciben datos del backend.
+
+**Pantallas incluidas:**
+
+- Inicio de sesión
+- Pantalla principal
+- Biblioteca de juegos (fichas con detalles más importantes de cada juego)
+- Ficha individual de cada juego (con todos los detalles)
+- Wishlist
+- Estadísticas
+- Configuración / Cambio de contraseña
+
+Los filtros estarán dentro de las pantallas de Biblioteca de juegos y Wishlist, para filtrar los juegos. La pantalla principal será una pantalla que muestre algunas estadísticas a modo de preview, igual con los juegos tanto de la biblioteca como de la wishlist
+
+**Capturas de las pantallas cuando estén terminadas**
+
+---
+
+## 5. Desarrollo técnico
+
+### 5.1 Tecnologías utilizadas
+
+- **Lenguaje principal:** Java  
+- **Frameworks:** JavaFX, Spring Boot  
+- **ORM / BBDD:** Neon (PostgreSQL vía REST)  
+- **Diseño UI:** JavaFX + Scene Builder  
+- **Gestor de dependencias:** Maven  
+- **Control de versiones:** Git + GitHub  
+- **APIs externas:** RAWG, PriceCharting  
+- **Pruebas:** JUnit, Postman
+
+---
+
+### 5.2 Estructura del proyecto
+
+El proyecto está organizado en paquetes:
+
+- `modelo`: entidades del dominio  
+- `servicio`: lógica de negocio  
+- `repositorio`: acceso a base de datos  
+- `controlador`: controladores de cada pantalla  
+- `vista`: archivos FXML  
+- `utilidades`: clases auxiliares para hashing, exportación PDF, validación, etc.
+
+---
+
+### 5.3 Funcionalidades implementadas
+
+- Inicio de sesión y gestión de usuarios. 
+- CRUD de videojuegos con datos detallados.
+- Gestión y filtrado de wishlist.
+- Pantallas visuales intuitivas mediante JavaFX.
+
+Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, por lo tanto no son incluídas aquí.
+
+---
+
+## 6. Pruebas
+
+- Pruebas unitarias con JUnit.
+- Pruebas funcionales: navegación, filtros, exportación.
+- Pruebas de carga con colecciones extensas.
+- Pruebas de conexión con la Base de datos.
+- Pruebas de conexión con APIs externas.
+- Pruebas manuales por parte de usuarios para feedback.
+
+---
+
+## 7. Manual de usuario
+
+### Requisitos
+
+- Sistema operativo: Windows  
+- Java 17  
+- Conexión a Internet (opcional para usar APIs)
+
+### Pasos básicos
+
+1. Iniciar sesión o registrarse.
+2. Añadir juegos a la biblioteca.
+3. Buscar juegos con filtros.
+4. Ver wishlist y actualizar precios.
+5. Exportar la colección a PDF.
+
+**MANUAL DE USUARIO EN DESARROLLO, FALTAN CAPTURAS Y TUTORIAL**
+
+---
+
+## 8. Manual técnico
+
+### Requisitos de desarrollo
+
+- Java 17  
+- Maven  
+- Visual Studio Code  
+- Cuenta en Neon  
+- Claves API para RAWG y PriceCharting
+
+### Pasos para ejecutar
+
+1. Clonar repositorio: `git clone https://github.com/DavidBargallo/TFG`   
+2. Ejecutar `App.java` (Usando Maven).  
+3. Verificar que Spring Boot arranca correctamente.
+
+---
+
+## 9. Conclusiones
+
+**SE AÑADIRÁ CUANDO SE TERMINE EL PROYECTO**
+
+---
+
+## 10. Bibliografía
+
+- OpenAI. (2025). *ChatGPT*. Recuperado de https://chatgpt.com/  
+- Google. (2025). *Google Search*. Recuperado de https://www.google.com/  
+- Gemini. (2025). *Gemini AI*. Recuperado de https://gemini.google.com/  
+- Stack Overflow. (2025). *Stack Overflow*. Recuperado de https://stackoverflow.com/  
+- Supabase. (n.d.). *Supabase Docs*. Recuperado de https://supabase.com/docs  
+- Oracle. (n.d.). *Java Documentation*. Recuperado de https://docs.oracle.com/en/java/  
+- RAWG. (n.d.). *RAWG Video Games Database API*. Recuperado de https://rawg.io/apidocs
+
+---
+
+## 11. Anexos
+
+**PENDIENTE**
