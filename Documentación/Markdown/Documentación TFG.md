@@ -7,7 +7,6 @@
 ---
 
 ## Índice
-
 - [Proyecto de Fin de Ciclo: Aplicación de Gestión de Videojuegos](#proyecto-de-fin-de-ciclo-aplicación-de-gestión-de-videojuegos)
   - [Índice](#índice)
   - [1. Introducción](#1-introducción)
@@ -39,6 +38,8 @@
 ## 1. Introducción
 
 Este documento recoge el desarrollo del TFG, que es en una aplicación de escritorio para la gestión de colecciones de videojuegos. El objetivo de la aplicación es facilitar a los usuarios la organización, seguimiento y análisis de su biblioteca personal de videojuegos, ya sean físicos o digitales.
+
+Vamos a listar algunas aplicaciones parecidas que existen. Si bien es cierto, que a nivel escritorio no hay mucha oferta, estas aplicaciones/webs pueden ser similares y cubrir necesidades que buscamos cubrir con nuestra app, y podemos tomarlas como ejemplo, tanto como inspiración como para intentar mejorarlas. Por mencionar las más importantes: GG App, HowLongToBeat o Backloggd, las 3 son aplicaciones que permiten llevar un seguimiento de videojuegos. Por ejemplo, una cosa que mejoraremos es el permitir almacenar juegos físicos con su localización. Además nos inspiraremos en estas aplicaciones en el tema de las estadísticas o los precios de los mismos entre otras cosas.
 
 ---
 
