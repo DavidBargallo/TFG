@@ -118,12 +118,13 @@ Las interfaces gráficas se han desarrollado con JavaFX y Scene Builder. La nave
 **Pantallas incluidas:**
 
 - Inicio de sesión
+- Pantalla de registro
 - Pantalla principal
-- Biblioteca de juegos (fichas con detalles más importantes de cada juego)
-- Ficha individual de cada juego (con todos los detalles)
+- Biblioteca de juegos
+- Ficha detallada de cada juego
 - Wishlist
 - Estadísticas
-- Configuración / Cambio de contraseña
+- Cambio de contraseña
 
 Los filtros estarán dentro de las pantallas de Biblioteca de juegos y Wishlist, para filtrar los juegos. La pantalla principal será una pantalla que muestre algunas estadísticas a modo de preview, igual con los juegos tanto de la biblioteca como de la wishlist
 
