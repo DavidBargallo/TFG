@@ -1,9 +1,9 @@
 package es.etg.dam.tfg.programa.servicio;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.repositorio.UsuarioRepositorio;
@@ -16,9 +16,18 @@ import java.util.Optional;
 public class UsuarioServicio {
 
     private final UsuarioRepositorio usuarioRepositorio;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder; 
 
+    @Transactional 
     public Usuario registrarUsuario(Usuario usuario) {
+        if (usuarioRepositorio.existsByNombreUsuario(usuario.getNombreUsuario())) {
+            throw new IllegalArgumentException("El nombre de usuario ya existe");
+        }
+        if (usuarioRepositorio.existsByCorreo(usuario.getCorreo())) {
+            throw new IllegalArgumentException("El correo electrónico ya existe");
+        }
+        String hashedContrasena = passwordEncoder.encode(usuario.getContrasena());
+        usuario.setContrasena(hashedContrasena);
         return usuarioRepositorio.save(usuario);
     }
 
@@ -38,25 +47,25 @@ public class UsuarioServicio {
         return usuarioRepositorio.existsByCorreoOrNombreUsuario(correo, nombreUsuario);
     }
 
+    @Transactional 
     public Usuario actualizarUsuario(Usuario usuario) {
         return usuarioRepositorio.save(usuario);
     }
 
+    @Transactional
     public void eliminarUsuario(Integer id) {
         usuarioRepositorio.deleteById(id);
     }
 
-    public Usuario validarCredenciales(String nombreUsuario, String contrasena) {
+    public Optional<Usuario> validarCredenciales(String nombreUsuario, String contrasena) {
         Optional<Usuario> usuarioOpt = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
-    
+
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
-                return usuario;
+                return Optional.of(usuario);
             }
         }
-    
-        return null;
+        return Optional.empty(); 
     }
 }
-

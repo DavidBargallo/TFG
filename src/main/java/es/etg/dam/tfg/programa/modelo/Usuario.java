@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
 @Table(
@@ -22,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Usuario {
 
     @Id
@@ -45,13 +45,4 @@ public class Usuario {
         inverseJoinColumns = @JoinColumn(name = "videojuego_id")
     )
     private Set<Videojuego> videojuegos;
-
-    public void setContrasena(String contrasena) {
-        this.contrasena = hashContrasena(contrasena);
-    }
-
-    private String hashContrasena(String contrasena) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        return encoder.encode(contrasena);
-    }
 }

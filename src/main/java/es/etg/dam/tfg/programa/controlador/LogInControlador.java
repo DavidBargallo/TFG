@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.servicio.UsuarioServicio;
 import es.etg.dam.tfg.programa.utils.SpringFXMLLanzador;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -40,15 +41,26 @@ public class LogInControlador {
 
         if (nombreUsuario.isBlank() || contrasena.isBlank()) {
             lblError.setText("Debes introducir usuario y contraseña.");
+            lblError.setVisible(true); 
             return;
         }
 
-        Usuario usuario = usuarioServicio.validarCredenciales(nombreUsuario, contrasena);
-        if (usuario != null) {
-            lblError.setText("");
-            abrirPantallaPrincipal(usuario);
-        } else {
-            lblError.setText("Usuario o contraseña incorrectos.");
+        try {
+            Optional<Usuario> usuarioOptional = usuarioServicio.validarCredenciales(nombreUsuario, contrasena);
+
+            if (usuarioOptional.isPresent()) {
+                lblError.setText("Inicio de sesión exitoso!"); 
+                lblError.setVisible(true); 
+                Usuario usuario = usuarioOptional.get();
+                abrirPantallaPrincipal(usuario);
+            } else {
+                lblError.setText("Usuario o contraseña incorrectos.");
+                lblError.setVisible(true);
+            }
+        } catch (Exception e) {
+            logger.error("Error al iniciar sesión", e);
+            lblError.setText("Error al iniciar sesión: " + e.getMessage());
+            lblError.setVisible(true);
         }
     }
 
@@ -78,13 +90,9 @@ public class LogInControlador {
             stage.setTitle("Mi Biblioteca de Juegos");
             stage.show();
 
-            // BibliotecaControlador controlador = springFXMLLoader.getController();
-            // controlador.setUsuario(usuario);
-
         } catch (Exception e) {
             logger.error("Error al cargar la pantalla principal", e);
-            lblError.setText("Debes introducir usuario y contraseña.");
-            lblError.setVisible(true);
+            lblError.setText("Error al cargar la pantalla principal.");
         }
     }
 }
