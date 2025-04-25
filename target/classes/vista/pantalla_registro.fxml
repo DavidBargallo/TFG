@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane fx:controller="es.etg.dam.tfg.programa.controlador.RegistroControlador"
+           xmlns:fx="http://javafx.com/fxml"
+           prefWidth="600" prefHeight="400">
+
+    <VBox alignment="CENTER" spacing="15" maxWidth="400">
+        <Label text="Registro de Usuario">
+            <font>
+                <Font name="System Bold" size="20.0"/>
+            </font>
+        </Label>
+
+        <TextField fx:id="txtNombreUsuario" promptText="Nombre de Usuario" maxWidth="300"/>
+        <TextField fx:id="txtCorreo" promptText="Correo electrónico" maxWidth="300"/>
+        <PasswordField fx:id="txtContrasena" promptText="Contraseña" maxWidth="300"/>
+        <PasswordField fx:id="txtConfirmarContrasena" promptText="Confirmar Contraseña" maxWidth="300"/>
+
+        <Label fx:id="lblError" textFill="red" wrapText="true" textAlignment="CENTER" maxWidth="300"/>
+
+        <Button text="Registrarse" onAction="#registrarUsuario" maxWidth="200"/>
+        <Button text="Volver a Iniciar Sesión" onAction="#volverALogin" maxWidth="200"/>
+    </VBox>
+
+</StackPane>

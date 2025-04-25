@@ -52,9 +52,26 @@ public class LogInControlador {
         }
     }
 
+    @FXML
+    public void abrirRegistro(ActionEvent event) {
+        try {
+            Parent root = springFXMLLoader.load(getClass().getResource("/vista/pantalla_registro.fxml"));
+
+            Stage stage = (Stage) txtUsuario.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Registro de Usuario");
+            stage.show();
+
+        } catch (Exception e) {
+            logger.error("Error al abrir la pantalla de registro", e);
+            lblError.setText("No se pudo abrir la pantalla de registro.");
+        }
+    }
+
     private void abrirPantallaPrincipal(Usuario usuario) {
         try {
-            Parent root = springFXMLLoader.load(getClass().getResource("/es/etg/dam/tfg/app/vista/pantalla_biblioteca.fxml"));
+            Parent root = springFXMLLoader
+                    .load(getClass().getResource("/vista/pantalla_biblioteca.fxml"));
 
             Stage stage = (Stage) txtUsuario.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -66,8 +83,8 @@ public class LogInControlador {
 
         } catch (Exception e) {
             logger.error("Error al cargar la pantalla principal", e);
-            lblError.setText("Error al cargar la pantalla principal.");
+            lblError.setText("Debes introducir usuario y contraseña.");
+            lblError.setVisible(true);
         }
     }
 }
-

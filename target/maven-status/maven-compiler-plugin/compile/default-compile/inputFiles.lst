@@ -1,6 +1,7 @@
-C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\ArranqueSpringBoot.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\App.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\BibliotecaControlador.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\LogInControlador.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\RegistroControlador.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Compania.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Consola.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Estado.java
@@ -20,6 +21,7 @@ C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\UsuarioRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\UsuarioVideojuegoRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\VideojuegoRepositorio.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\ConsolaServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\UsuarioServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\UsuarioVideojuegoServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\VideojuegoServicio.java

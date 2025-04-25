@@ -2,36 +2,38 @@ package es.etg.dam.tfg.programa;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
-import es.etg.dam.tfg.programa.utils.ArranqueSpringBoot;
-
+@SpringBootApplication
 public class App extends Application {
 
-    private ApplicationContext springContext;
+    private ConfigurableApplicationContext springContext;
 
     public static void main(String[] args) {
-        launch(args);
+        Application.launch(App.class, args);
     }
 
     @Override
-    public void init() {
-        springContext = new SpringApplicationBuilder(ArranqueSpringBoot.class).run();
+    public void init() throws Exception {
+        springContext = new org.springframework.boot.builder.SpringApplicationBuilder(App.class).run();
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/es/etg/dam/tfg/programa/vista/Pantalla_Inicio.fxml"));
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/Pantalla_Inicio.fxml"));
         loader.setControllerFactory(springContext::getBean);
-
         Parent root = loader.load();
         stage.setScene(new Scene(root));
         stage.setTitle("Iniciar sesión");
         stage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        springContext.close();
     }
 }
