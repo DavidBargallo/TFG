@@ -118,13 +118,19 @@ Las interfaces gráficas se han desarrollado con JavaFX y Scene Builder. La nave
 **Pantallas incluidas:**
 
 - Inicio de sesión
+<img src = "iniciosesion.png"/>
 - Pantalla de registro
+<img src = "registro.png"/>
 - Pantalla principal
+<img src = "principal.png"/>
 - Biblioteca de juegos
-- Ficha detallada de cada juego
+<img src = "biblioteca.png"/>
+- Ficha detallada de cada juego **PENDIENTE**
+<img src = "ficha.png"/>
 - Wishlist
-- Estadísticas
-- Cambio de contraseña
+<img src = "wishlist.png"/>
+- Estadísticas **PENDIENTE**
+- Cambio de contraseña **PENDIENTE**
 
 Los filtros estarán dentro de las pantallas de Biblioteca de juegos y Wishlist, para filtrar los juegos. La pantalla principal será una pantalla que muestre algunas estadísticas a modo de preview, igual con los juegos tanto de la biblioteca como de la wishlist
 
@@ -218,8 +224,8 @@ El proyecto está organizado en paquetes:
 ### 5.3 Funcionalidades implementadas
 
 - Inicio de sesión y gestión de usuarios. 
-- CRUD de videojuegos con datos detallados.
-- Gestión y filtrado de wishlist.
+- Conexión a la BBDD
+- CRUD de videojuegos con datos detallados. **FALTAN PRUEBAS**
 - Pantallas visuales intuitivas mediante JavaFX.
 
 Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, por lo tanto no son incluídas aquí.
@@ -227,6 +233,8 @@ Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, p
 ---
 
 ## 6. Pruebas
+
+**LAS PRUEBAS AÚN NO SE HAN LLEVADO A CABO, PUES SERÁN AL FINAL.**
 
 - Pruebas unitarias con JUnit.
 - Pruebas funcionales: navegación, filtros, exportación.
@@ -242,7 +250,7 @@ Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, p
 ### Requisitos
 
 - Sistema operativo: Windows  
-- Java 17  
+- Java 22  
 - Conexión a Internet (opcional para usar APIs)
 
 ### Pasos básicos
@@ -261,7 +269,7 @@ Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, p
 
 ### Requisitos de desarrollo
 
-- Java 17  
+- Java 22  
 - Maven  
 - Visual Studio Code  
 - Cuenta en Neon  
@@ -270,7 +278,7 @@ Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, p
 ### Pasos para ejecutar
 
 1. Clonar repositorio: `git clone https://github.com/DavidBargallo/TFG`   
-2. Ejecutar `App.java` (Usando Maven).  
+2. Ejecutar `App.java` (Usando Maven mvn javafx:run).  
 3. Verificar que Spring Boot arranca correctamente.
 
 ---
@@ -283,13 +291,14 @@ Hay algunas funcionalidades avanzadas, pero aún no están terminadas al 100%, p
 
 ## 10. Bibliografía
 
-- OpenAI. (2025). *ChatGPT*. Recuperado de https://chatgpt.com/  
-- Google. (2025). *Google Search*. Recuperado de https://www.google.com/  
-- Gemini. (2025). *Gemini AI*. Recuperado de https://gemini.google.com/  
-- Stack Overflow. (2025). *Stack Overflow*. Recuperado de https://stackoverflow.com/  
-- Supabase. (n.d.). *Supabase Docs*. Recuperado de https://supabase.com/docs  
-- Oracle. (n.d.). *Java Documentation*. Recuperado de https://docs.oracle.com/en/java/  
-- RAWG. (n.d.). *RAWG Video Games Database API*. Recuperado de https://rawg.io/apidocs
+- OpenAI. (2025). *ChatGPT*. Para consultas de errores y código básico Recuperado de https://chatgpt.com/  
+- Google. (2025). *Google Search*. Para buscar diferentes informaciones Recuperado de https://www.google.com/  
+- Gemini. (2025). *Gemini AI*. Para consultas de errores, usabilidad de interfaces y código básico Recuperado de https://gemini.google.com/  
+- Stack Overflow. (2025). *Stack Overflow*. Para preguntar y buscar respuestas en los foros Recuperado de https://stackoverflow.com/  
+- Neon. (n.d.). *Neon Docs*. Para consultas de cómo conectar la app a su BBDD y realizar operaciones Recuperado de https://neon.tech/docs  
+- Oracle. (n.d.). *Java Documentation*. Para dudas básicas de programación en java Recuperado de https://docs.oracle.com/en/java/  
+- RAWG. (n.d.). *RAWG Video Games Database API*. Para consultar lo que ofrece la aplicación en cuanto a datos y cómo usarla Recuperado de https://rawg.io/apidocs
+- Scene Builder. ()
 
 ---
 
