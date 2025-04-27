@@ -118,18 +118,18 @@ Las interfaces gráficas se han desarrollado con JavaFX y Scene Builder. La nave
 **Pantallas incluidas:**
 
 - Inicio de sesión
-<img src = "iniciosesion.png"/>
+<img src = "fotos/iniciosesion.png"/>
 - Pantalla de registro
-<img src = "registro.png"/>
+<img src = "fotos/registro.png"/>
 - Pantalla principal
-<img src = "principal.png"/>
+<img src = "fotos/pincipal.png"/>
 - Biblioteca de juegos
-<img src = "biblioteca.png"/>
-- Ficha detallada de cada juego **PENDIENTE**
+<img src = "fotos/biblioteca.png"/>
+- Ficha detallada de cada juego **PENDIENTE DE REALIZAR MODIFICACIONES**
 <img src = "ficha.png"/>
 - Wishlist
-<img src = "wishlist.png"/>
-- Estadísticas **PENDIENTE**
+<img src = "fotos/wishlist.png"/>
+- Estadísticas **PENDIENTE DE REALIZAR MODIFICACIONES**
 - Cambio de contraseña **PENDIENTE**
 
 Los filtros estarán dentro de las pantallas de Biblioteca de juegos y Wishlist, para filtrar los juegos. La pantalla principal será una pantalla que muestre algunas estadísticas a modo de preview, igual con los juegos tanto de la biblioteca como de la wishlist
@@ -141,8 +141,10 @@ Los filtros estarán dentro de las pantallas de Biblioteca de juegos y Wishlist,
 **Caso de uso N1: Inicio de sesión:**
 <img src = "fotos/CasoUso01.png"/>
 
-**Caso de uso N2: Añadir videojuegos a la biblioteca:**
+**Caso de uso N2: Añadir videojuegos a la biblioteca:** *
 <img src = "fotos/CasoUso02.png"/>
+
+*. Comportamiento similar en el caso de uso de añadir juego a wishlist.
 
 ---
 
