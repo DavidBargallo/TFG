@@ -3,7 +3,6 @@ es\etg\dam\tfg\programa\modelo\Fabricante.class
 es\etg\dam\tfg\programa\controlador\LogInControlador.class
 es\etg\dam\tfg\programa\repositorio\EstadoRepositorio.class
 es\etg\dam\tfg\programa\modelo\Consola.class
-es\etg\dam\tfg\programa\utils\ConexionBBDD.class
 es\etg\dam\tfg\programa\modelo\ids\UsuarioVideojuegoID.class
 es\etg\dam\tfg\programa\modelo\Estado.class
 es\etg\dam\tfg\programa\modelo\Ubicacion.class

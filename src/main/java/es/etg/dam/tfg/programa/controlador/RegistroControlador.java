@@ -12,13 +12,11 @@ import javafx.scene.Parent;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
 @RequiredArgsConstructor
-@Controller
 public class RegistroControlador {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistroControlador.class);
@@ -71,7 +69,7 @@ public class RegistroControlador {
     @FXML
     public void volverAlLogin(ActionEvent event) {
         try {
-            Parent root = springFXMLLanzador.load(getClass().getResource("/es/etg/dam/tfg/pograma/app/vista/pantalla_inicio.fxml"));
+            Parent root = springFXMLLanzador.load(getClass().getResource("/vista/Pantalla_Inicio.fxml"));
             Stage stage = (Stage) txtNuevoUsuario.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Iniciar Sesión");
