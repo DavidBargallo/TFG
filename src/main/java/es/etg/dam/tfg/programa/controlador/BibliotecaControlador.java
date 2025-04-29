@@ -4,9 +4,8 @@ import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.Consola;
 import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
 import es.etg.dam.tfg.programa.servicio.ConsolaServicio;
-import es.etg.dam.tfg.programa.utils.SpringFXMLLanzador;
-
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,13 +14,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.net.URL;
 
 @Component
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class BibliotecaControlador {
 
     private final VideojuegoServicio videojuegoServicio;
     private final ConsolaServicio consolaServicio;
-    private final SpringFXMLLanzador springFXMLLanzador;
+    private final ApplicationContext applicationContext; 
 
     @FXML
     private VBox vbox_ficha_juego;
@@ -75,8 +77,8 @@ public class BibliotecaControlador {
 
     private void configurarEventosMenu() {
         men_item_cerr_ses.setOnAction(e -> volverALogin());
-        men_item_perfil.setOnAction(e -> abrirPantalla("/es/etg/dam/tfg/programa/vista/Perfil.fxml", "Mi Perfil"));
-        men_item_cam_contr.setOnAction(e -> abrirPantalla("/es/etg/dam/tfg/programa/vista/CambiarContrasena.fxml", "Cambiar contraseña"));
+        men_item_perfil.setOnAction(e -> abrirPantalla("/vista/Perfil.fxml", "Mi Perfil")); 
+        men_item_cam_contr.setOnAction(e -> abrirPantalla("/vista/CambiarContrasena.fxml", "Cambiar contraseña")); 
     }
 
     @FXML
@@ -94,27 +96,31 @@ public class BibliotecaControlador {
             mostrarAlerta("Formato de precio incorrecto.");
             return;
         }
-        
+
 
         Consola consolaSeleccionada = comboConsola.getValue();
         List<Videojuego> juegos = videojuegoServicio.obtenerTodos();
 
         List<Videojuego> filtrados = juegos.stream()
-            .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
-            .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
-            .filter(j -> precioMax == null || (j.getPrecio() != null && j.getPrecio().compareTo(precioMax) <= 0))
-            .sorted(obtenerComparador(orden))
-            .collect(Collectors.toList());
+                .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
+                .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
+                .filter(j -> precioMax == null || (j.getPrecio() != null && j.getPrecio().compareTo(precioMax) <= 0))
+                .sorted(obtenerComparador(orden))
+                .collect(Collectors.toList());
 
         mostrarJuegos(filtrados);
     }
 
     private Comparator<Videojuego> obtenerComparador(String orden) {
         return switch (orden) {
-            case "Nombre A-Z" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
-            case "Nombre Z-A" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
-            case "Precio ascendente" -> Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "Precio descendente" -> Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.reverseOrder()));
+            case "Nombre A-Z" ->
+                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
+            case "Nombre Z-A" ->
+                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
+            case "Precio ascendente" ->
+                    Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "Precio descendente" ->
+                    Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.reverseOrder()));
             default -> Comparator.comparing(Videojuego::getNombre);
         };
     }
@@ -145,7 +151,7 @@ public class BibliotecaControlador {
             try {
                 portada.setImage(new Image(juego.getPortadaUrl(), true));
             } catch (Exception e) {
-                portada.setImage(new Image(getClass().getResourceAsStream("placeholder")));
+                portada.setImage(new Image(getClass().getResourceAsStream("/placeholder.png"))); 
             }
         }
 
@@ -173,18 +179,25 @@ public class BibliotecaControlador {
     }
 
     private void volverALogin() {
-        abrirPantalla("/es/etg/dam/tfg/programa/vista/pantalla_inicio.fxml", "Iniciar sesión");
+        abrirPantalla("/vista/pantalla_inicio.fxml", "Iniciar sesión"); 
     }
 
     private void abrirPantalla(String ruta, String titulo) {
         try {
-            Parent root = springFXMLLanzador.load(getClass().getResource(ruta));
+            URL url = getClass().getResource(ruta);
+            if (url == null) {
+                mostrarAlerta("No se pudo encontrar el recurso FXML: " + ruta);
+                return; 
+            }
+            FXMLLoader loader = new FXMLLoader(url);
+            loader.setControllerFactory(applicationContext::getBean); 
+            Parent root = loader.load();
             Stage stage = (Stage) vbox_ficha_juego.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle(titulo);
             stage.show();
-        } catch (Exception e) {
-            mostrarAlerta("Error al abrir la pantalla.");
+        } catch (IOException e) {
+            mostrarAlerta("Error al abrir la pantalla: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -196,4 +209,6 @@ public class BibliotecaControlador {
         alert.showAndWait();
     }
 }
+
+
 

@@ -14,7 +14,6 @@ es\etg\dam\tfg\programa\modelo\Genero.class
 es\etg\dam\tfg\programa\controlador\BibliotecaControlador.class
 es\etg\dam\tfg\programa\repositorio\FabricanteRepositorio.class
 es\etg\dam\tfg\programa\servicio\VideojuegoServicio.class
-es\etg\dam\tfg\programa\utils\SpringFXMLLanzador.class
 es\etg\dam\tfg\programa\servicio\UsuarioVideojuegoServicio.class
 es\etg\dam\tfg\programa\modelo\UsuarioVideojuego.class
 es\etg\dam\tfg\programa\modelo\Videojuego.class

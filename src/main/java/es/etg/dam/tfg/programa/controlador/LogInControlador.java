@@ -16,8 +16,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
-import java.net.URL; 
 
 @Component
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class LogInControlador {
 
     @FXML
     public void initialize() {
-
+        // No es necesario
     }
 
     @FXML
@@ -82,7 +82,9 @@ public class LogInControlador {
     public void abrirRegistro(ActionEvent event) {
         try {
             URL registroURL = getClass().getResource("/vista/pantalla_registro.fxml");
-            Parent root = FXMLLoader.load(registroURL);
+            FXMLLoader fxmlLoader = new FXMLLoader(registroURL);
+            fxmlLoader.setControllerFactory(applicationContext::getBean); 
+            Parent root = fxmlLoader.load();
             Stage stage = (Stage) txtUsuario.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Registro de Usuario");
@@ -95,22 +97,15 @@ public class LogInControlador {
 
     private void abrirPantallaPrincipal(Usuario usuario, ActionEvent event) {
         try {
-            
             URL bibliotecaURL = getClass().getResource("/vista/pantalla_biblioteca.fxml");
             FXMLLoader loader = new FXMLLoader(bibliotecaURL);
             loader.setControllerFactory(applicationContext::getBean);
             Parent root = loader.load();
-
-            //BibliotecaControlador bibliotecaControlador = loader.getController();
-            
-            // bibliotecaControlador.setUsuario(usuario);
-
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Mi Biblioteca de Juegos");
             stage.show();
-
         } catch (IOException e) {
             logger.error("Error al cargar la pantalla principal", e);
             lblError.setText("Error al cargar la pantalla principal: " + e.getMessage());
