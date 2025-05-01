@@ -7,6 +7,7 @@ es\etg\dam\tfg\programa\modelo\ids\UsuarioVideojuegoID.class
 es\etg\dam\tfg\programa\modelo\Estado.class
 es\etg\dam\tfg\programa\modelo\Ubicacion.class
 es\etg\dam\tfg\programa\repositorio\ConsolaRepositorio.class
+es\etg\dam\tfg\programa\JavaFXApp.class
 es\etg\dam\tfg\programa\repositorio\GeneroRepositorio.class
 es\etg\dam\tfg\programa\repositorio\VideojuegoRepositorio.class
 es\etg\dam\tfg\programa\servicio\ConsolaServicio.class

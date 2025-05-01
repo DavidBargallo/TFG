@@ -5,9 +5,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane fx:controller="es.etg.dam.tfg.programa.controlador.RegistroControlador"
-           xmlns:fx="http://javafx.com/fxml"
-           prefWidth="600" prefHeight="400">
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.etg.dam.tfg.programa.controlador.RegistroControlador" prefWidth="600" prefHeight="400">
 
     <VBox alignment="CENTER" spacing="15" maxWidth="400">
         <Label text="Registro de Usuario">
@@ -23,8 +21,8 @@
 
         <Label fx:id="lblError" textFill="red" wrapText="true" textAlignment="CENTER" maxWidth="300"/>
 
-        <Button text="Registrarse" onAction="#registrarUsuario" maxWidth="200"/>
-        <Button text="Volver a Iniciar Sesión" onAction="#volverALogin" maxWidth="200"/>
+        <Button text="Registrarse" fx:id="registerButton" onAction="#registrarUsuario" maxWidth="200"/>
+        <Button text="Volver a Iniciar Sesión" fx:id="returnLogInButton" onAction="#volverALogin" maxWidth="200"/>
     </VBox>
 
 </StackPane>

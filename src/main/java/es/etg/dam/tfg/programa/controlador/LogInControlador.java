@@ -23,6 +23,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LogInControlador {
 
+    //Nombre usuario: David
+    //Password: Contras3ña!
+
     private static final Logger logger = LoggerFactory.getLogger(LogInControlador.class);
 
     @FXML
@@ -40,7 +43,7 @@ public class LogInControlador {
 
     @FXML
     public void initialize() {
-        // No es necesario
+
     }
 
     @FXML
