@@ -64,6 +64,8 @@ public class Videojuego {
         inverseJoinColumns = @JoinColumn(name = "consola_id")
     )
     private Set<Consola> consolas;
+
+    @Column(name = "es_fisico", nullable = false) // Nuevo campo
+    private boolean esFisico;
+
 }
-
-

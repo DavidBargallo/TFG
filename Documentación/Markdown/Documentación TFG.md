@@ -205,7 +205,7 @@ Se utiliza GitHub para llevar un control del desarrollo, permitir volver a una v
 - **Diseño UI:** JavaFX + Scene Builder  
 - **Gestor de dependencias:** Maven  
 - **Control de versiones:** Git + GitHub  
-- **APIs externas:** RAWG, PriceCharting  
+- **APIs externas:** RAWG, PriceCharting y Retrofit (dependencias) 
 - **Pruebas:** JUnit, Postman
 
 ---
