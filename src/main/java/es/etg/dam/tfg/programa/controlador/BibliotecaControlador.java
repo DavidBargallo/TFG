@@ -19,11 +19,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.net.URL;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -31,10 +29,10 @@ public class BibliotecaControlador {
 
     private final VideojuegoServicio videojuegoServicio;
     private final ConsolaServicio consolaServicio;
-    private final ApplicationContext applicationContext; 
+    private final ApplicationContext applicationContext;
 
     @FXML
-    private VBox vbox_ficha_juego;
+    private VBox contenedorResultados;
 
     @FXML
     private ComboBox<Consola> comboConsola;
@@ -46,65 +44,36 @@ public class BibliotecaControlador {
     private TextField txtNombre;
 
     @FXML
-    private TextField txtPrecioMax;
-
-    @FXML
-    private MenuItem men_item_cerr_ses;
-
-    @FXML
-    private MenuItem men_item_perfil;
-
-    @FXML
-    private MenuItem men_item_cam_contr;
+    private TextField txtPrecioMaximo;
 
     @FXML
     public void initialize() {
-        cargarConsolas();
-        configurarOrden();
-        mostrarTodosLosJuegos();
-        configurarEventosMenu();
-    }
-
-    private void cargarConsolas() {
-        List<Consola> consolas = consolaServicio.obtenerTodas();
-        comboConsola.getItems().addAll(consolas);
-    }
-
-    private void configurarOrden() {
         comboOrden.getItems().addAll("Nombre A-Z", "Nombre Z-A", "Precio ascendente", "Precio descendente");
         comboOrden.getSelectionModel().selectFirst();
-    }
 
-    private void configurarEventosMenu() {
-        men_item_cerr_ses.setOnAction(e -> volverALogin());
-        men_item_perfil.setOnAction(e -> abrirPantalla("/vista/Perfil.fxml", "Mi Perfil")); 
-        men_item_cam_contr.setOnAction(e -> abrirPantalla("/vista/CambiarContrasena.fxml", "Cambiar contraseña")); 
+        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());
+
+        mostrarTodosLosJuegos();
     }
 
     @FXML
     private void aplicarFiltros() {
         String nombre = txtNombre.getText().trim().toLowerCase();
         String orden = comboOrden.getValue();
-        final BigDecimal precioMax;
+        BigDecimal precioMaximo;
+
         try {
-            if (!txtPrecioMax.getText().isBlank()) {
-                precioMax = new BigDecimal(txtPrecioMax.getText());
-            } else {
-                precioMax = null;
-            }
+            precioMaximo = txtPrecioMaximo.getText().isBlank() ? null : new BigDecimal(txtPrecioMaximo.getText());
         } catch (NumberFormatException e) {
             mostrarAlerta("Formato de precio incorrecto.");
             return;
         }
 
-
         Consola consolaSeleccionada = comboConsola.getValue();
-        List<Videojuego> juegos = videojuegoServicio.obtenerTodos();
-
-        List<Videojuego> filtrados = juegos.stream()
+        List<Videojuego> filtrados = videojuegoServicio.obtenerTodos().stream()
                 .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
                 .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
-                .filter(j -> precioMax == null || (j.getPrecio() != null && j.getPrecio().compareTo(precioMax) <= 0))
+                .filter(j -> precioMaximo == null || (j.getPrecio() != null && j.getPrecio().compareTo(precioMaximo) <= 0))
                 .sorted(obtenerComparador(orden))
                 .collect(Collectors.toList());
 
@@ -113,73 +82,81 @@ public class BibliotecaControlador {
 
     private Comparator<Videojuego> obtenerComparador(String orden) {
         return switch (orden) {
-            case "Nombre A-Z" ->
-                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
-            case "Nombre Z-A" ->
-                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
-            case "Precio ascendente" ->
-                    Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "Precio descendente" ->
-                    Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.reverseOrder()));
+            case "Nombre A-Z" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
+            case "Nombre Z-A" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
+            case "Precio ascendente" -> Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "Precio descendente" -> Comparator.comparing(Videojuego::getPrecio, Comparator.nullsLast(Comparator.reverseOrder()));
             default -> Comparator.comparing(Videojuego::getNombre);
         };
     }
 
     private void mostrarTodosLosJuegos() {
-        List<Videojuego> juegos = videojuegoServicio.obtenerTodos();
-        mostrarJuegos(juegos);
+        mostrarJuegos(videojuegoServicio.obtenerTodos());
     }
 
     private void mostrarJuegos(List<Videojuego> juegos) {
-        vbox_ficha_juego.getChildren().clear();
-
-        for (Videojuego juego : juegos) {
-            VBox ficha = crearFichaJuego(juego);
-            vbox_ficha_juego.getChildren().add(ficha);
-        }
+        contenedorResultados.getChildren().clear();
+        juegos.forEach(j -> contenedorResultados.getChildren().add(crearFichaJuego(j)));
     }
 
     private VBox crearFichaJuego(Videojuego juego) {
         VBox ficha = new VBox(5);
-        ficha.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-background-color: #f9f9f9; -fx-padding: 10;");
+        ficha.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-background-color: #f9f9f9; -fx-padding: 10;");
 
         ImageView portada = new ImageView();
         portada.setFitWidth(100);
         portada.setFitHeight(100);
         portada.setPreserveRatio(true);
-        if (juego.getPortadaUrl() != null) {
-            try {
-                portada.setImage(new Image(juego.getPortadaUrl(), true));
-            } catch (Exception e) {
-                portada.setImage(new Image(getClass().getResourceAsStream("/placeholder.png"))); 
-            }
+
+        try {
+            portada.setImage(new Image(juego.getPortadaUrl(), true));
+        } catch (Exception e) {
+            portada.setImage(new Image(getClass().getResourceAsStream("/placeholder.png")));
         }
 
         Label lblNombre = new Label("Nombre: " + juego.getNombre());
-        Label lblConsola = new Label("Consolas: " + obtenerNombreConsolas(juego.getConsolas()));
-        Label lblGenero = new Label("Géneros: " + obtenerNombreGeneros(juego.getGeneros()));
-        Label lblEmpresa = new Label("Empresa: " + (juego.getCompania() != null ? juego.getCompania().getNombre() : "N/A"));
+        Label lblConsolas = new Label("Consolas: " + obtenerNombres(juego.getConsolas()));
+        Label lblGeneros = new Label("Géneros: " + obtenerNombresGeneros(juego.getGeneros()));
+        Label lblEmpresa = new Label("Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
 
-        ficha.getChildren().addAll(portada, lblNombre, lblConsola, lblGenero, lblEmpresa);
+        ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa);
         return ficha;
     }
 
-    private String obtenerNombreConsolas(Set<Consola> consolas) {
-        return consolas.stream().map(Consola::getNombre).collect(Collectors.joining(", "));
+    private String obtenerNombres(Set<? extends Object> entidades) {
+        return entidades.stream()
+                .map(e -> {
+                    try {
+                        return (String) e.getClass().getMethod("getNombre").invoke(e);
+                    } catch (Exception ex) {
+                        return "";
+                    }
+                })
+                .collect(Collectors.joining(", "));
     }
 
-    private String obtenerNombreGeneros(Set<?> generos) {
-        return generos.stream().map(g -> {
-            try {
-                return (String) g.getClass().getMethod("getNombre").invoke(g);
-            } catch (Exception e) {
-                return "";
-            }
-        }).collect(Collectors.joining(", "));
+    private String obtenerNombresGeneros(Set<?> generos) {
+        return obtenerNombres(generos);
     }
 
-    private void volverALogin() {
-        abrirPantalla("/vista/pantalla_inicio.fxml", "Iniciar sesión"); 
+    @FXML
+    private void cerrarSesion() {
+        abrirPantalla("/vista/pantalla_inicio.fxml", "Iniciar sesión");
+    }
+
+    @FXML
+    private void abrirPerfil() {
+        abrirPantalla("/vista/Perfil.fxml", "Mi Perfil");
+    }
+
+    @FXML
+    private void cambiarContrasena() {
+        abrirPantalla("/vista/CambiarContrasena.fxml", "Cambiar contraseña");
+    }
+
+    @FXML
+    private void abrirFormularioAgregarJuego() {
+        abrirPantalla("/vista/pantalla_busqueda.fxml", "Buscar en RAWG API");
     }
 
     private void abrirPantalla(String ruta, String titulo) {
@@ -187,18 +164,18 @@ public class BibliotecaControlador {
             URL url = getClass().getResource(ruta);
             if (url == null) {
                 mostrarAlerta("No se pudo encontrar el recurso FXML: " + ruta);
-                return; 
+                return;
             }
+
             FXMLLoader loader = new FXMLLoader(url);
-            loader.setControllerFactory(applicationContext::getBean); 
+            loader.setControllerFactory(applicationContext::getBean);
             Parent root = loader.load();
-            Stage stage = (Stage) vbox_ficha_juego.getScene().getWindow();
+            Stage stage = (Stage) contenedorResultados.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle(titulo);
             stage.show();
         } catch (IOException e) {
             mostrarAlerta("Error al abrir la pantalla: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

@@ -1,20 +1,30 @@
 package es.etg.dam.tfg.programa.api;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Data;
 import java.util.List;
+
+import lombok.Data;
 
 @Data
 public class RAWGVideojuego {
-    private int id;
-    private String name;
-    @SerializedName("released")
-    private String fechaLanzamiento;
-    private double rating;
-    @SerializedName("background_image")
-    private String backgroundImage;
-    private List<RAWGGenero> genres;
-    private List<RAWGContenedorPlataforma> platforms; // Contenedor para guardar la lista de plataformas que devuelve RAWG.
-    private String description;
-    private int metacritic;
+    public int id;
+    public String name;
+    public String released;
+    public String background_image;
+    public List<PlatformInfo> platforms;
+    public List<GenreInfo> genres;
+
+    public static class PlatformInfo {
+        public Platform platform;
+
+        public static class Platform {
+            public int id;
+            public String name;
+        }
+    }
+
+    public static class GenreInfo {
+        public int id;
+        public String name;
+    }
 }
+

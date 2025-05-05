@@ -1,5 +1,15 @@
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGContenedorPlataforma.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGGenero.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGPlataforma.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGRespuesta.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGServicio.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\RAWGVideojuego.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\api\retrofit\RAWGCliente.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\App.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\configuraciones\ConfiguracionBean.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\configuraciones\ConfiguracionRestTemplate.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\BibliotecaControlador.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\ControladorBusqueda.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\LogInControlador.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\controlador\RegistroControlador.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\JavaFXApp.java
@@ -23,6 +33,9 @@ C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\UsuarioVideojuegoRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\VideojuegoRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\ConsolaServicio.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\GeneroServicio.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\RawgApiServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\UsuarioServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\UsuarioVideojuegoServicio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\servicio\VideojuegoServicio.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\utils\Sesion.java

@@ -17,4 +17,6 @@ public interface VideojuegoRepositorio extends JpaRepository<Videojuego, Integer
     Optional<Videojuego> findByNombreAndFechaLanzamiento(String nombre, LocalDate fechaLanzamiento);
 
     List<Videojuego> findByNombreContainingIgnoreCase(String nombre);
+
+    Optional<Videojuego> findByNombre(String nombre);
 }

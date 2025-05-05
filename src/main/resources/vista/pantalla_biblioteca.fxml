@@ -6,14 +6,14 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="10.0" prefHeight="600.0" prefWidth="800.0">
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.etg.dam.tfg.programa.controlador.BibliotecaControlador" spacing="10.0" prefHeight="600.0" prefWidth="800.0">
     <MenuBar fx:id="menuBar">
         <menus>
             <Menu text="Cuenta">
                 <items>
-                    <MenuItem fx:id="menuPerfil" text="Perfil" />
-                    <MenuItem fx:id="menuCambiarContrasena" text="Cambiar contraseña" />
-                    <MenuItem fx:id="menuCerrarSesion" text="Cerrar sesión" />
+                    <MenuItem fx:id="menuPerfil" text="Perfil" onAction="#abrirPerfil" />
+                    <MenuItem fx:id="menuCambiarContrasena" text="Cambiar contraseña" onAction="#cambiarContrasena" />
+                    <MenuItem fx:id="menuCerrarSesion" text="Cerrar sesión" onAction="#cerrarSesion" />
                 </items>
             </Menu>
             <Menu text="Wishlist">
@@ -49,7 +49,7 @@
                 <Label text="Ordenar por:" />
                 <ComboBox fx:id="comboOrden" prefWidth="150.0" />
             </HBox>
-            <Button fx:id="btnAplicarFiltros" text="Aplicar Filtros" prefWidth="200.0" />
+            <Button fx:id="btnAplicarFiltros" text="Aplicar Filtros" onAction="#aplicarFiltros" prefWidth="200.0" />
         </VBox>
     </TitledPane>
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
@@ -63,6 +63,6 @@
         <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
         </padding>
-        <Button fx:id="btnAgregarJuego" text="Agregar nuevo juego" />
+        <Button fx:id="btnAgregarJuego" text="Agregar nuevo juego" onAction="#abrirFormularioAgregarJuego" />
     </HBox>
 </VBox>

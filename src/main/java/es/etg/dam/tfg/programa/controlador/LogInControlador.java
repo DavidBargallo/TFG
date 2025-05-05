@@ -2,6 +2,7 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.servicio.UsuarioServicio;
+import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -65,6 +66,7 @@ public class LogInControlador {
                 if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
                     lblError.setText("Inicio de sesión exitoso!");
                     lblError.setVisible(true);
+                    Sesion.iniciarSesion(usuario);
                     abrirPantallaPrincipal(usuario, event);
                 } else {
                     lblError.setText("Usuario o contraseña incorrectos.");
