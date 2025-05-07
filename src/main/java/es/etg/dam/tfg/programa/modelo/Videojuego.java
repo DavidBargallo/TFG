@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -27,9 +26,6 @@ public class Videojuego {
 
     @Column(name = "nombre", nullable = false)
     private String nombre;
-
-    @Column(name = "precio")
-    private BigDecimal precio;
 
     @Column(name = "fecha_lanzamiento", nullable = false)
     private LocalDate fechaLanzamiento;
@@ -65,7 +61,7 @@ public class Videojuego {
     )
     private Set<Consola> consolas;
 
-    @Column(name = "es_fisico", nullable = false) // Nuevo campo
+    @Column(name = "es_fisico", nullable = false)
     private boolean esFisico;
 
 }

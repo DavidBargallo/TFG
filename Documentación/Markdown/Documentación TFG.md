@@ -57,7 +57,6 @@ Vamos a listar algunas aplicaciones parecidas que existen. Si bien es cierto, qu
 Muchos jugadores acumulan videojuegos en diferentes formatos y plataformas, lo que dificulta su organización. Esta aplicación busca centralizar toda esta información en un único lugar, resolviendo problemas como:
 
 - Desorganización de juegos físicos y digitales.
-- Falta de seguimiento de DLCs y complementos.
 - Dificultad para localizar juegos físicos.
 - Falta de estadísticas de los juegos que ha jugado.
 - No poder compartir la colección de juegos completa de todas las plataformas.
@@ -77,7 +76,7 @@ Desarrollar una aplicación de escritorio que permita a los usuarios gestionar s
 - Permitir añadir, editar, eliminar y filtrar videojuegos (por diferentes parámetros).
 - Gestionar wishlist de juegos con seguimiento de precios.
 - Mostrar estadísticas de la persona (género más jugado, consola más jugada...).
-- Llevar un registro de la uubicación física de cada juego.
+- Llevar un registro de la ubicación física de cada juego.
 - Exportar la colección en formato PDF.
 - Conectar con APIs externas para importar datos o precios.
 

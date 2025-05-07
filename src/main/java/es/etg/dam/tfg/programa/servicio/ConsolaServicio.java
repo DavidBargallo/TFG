@@ -35,8 +35,5 @@ public class ConsolaServicio {
         return consolaRepositorio.existsByNombreIgnoreCase(nombre);
     }
 
-    public List<Consola> buscarPorNombre(String nombre) {
-        return consolaRepositorio.findByNombreContainingIgnoreCase(nombre);
-    }
 }
 

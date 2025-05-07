@@ -115,28 +115,29 @@ public class ControladorBusqueda {
                     videojuego.setEsFisico(false);
                     videojuego = videojuegoRepositorio.save(videojuego);
                 }
-
+    
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
                 if (usuarioVideojuegoRepositorio.existsById(id)) {
                     mostrarAlerta("El juego ya está en tu biblioteca.");
                     return;
                 }
-
+    
                 UsuarioVideojuego relacion = new UsuarioVideojuego();
                 relacion.setId(id);
                 relacion.setUsuario(usuario);
                 relacion.setVideojuego(videojuego);
                 relacion.setEnWishlist(false);
                 usuarioVideojuegoRepositorio.save(relacion);
-
+    
                 mostrarAlerta("¡Juego agregado a tu biblioteca!");
             } catch (Exception ex) {
                 mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
             }
         });
-
+    
         return btnAgregar;
     }
+    
 
     private void mostrarAlerta(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
