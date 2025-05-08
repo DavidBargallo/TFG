@@ -15,13 +15,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
@@ -33,21 +34,12 @@ public class BibliotecaControlador {
     private final GeneroServicio generoServicio;
     private final ApplicationContext applicationContext;
 
-    @FXML
-    private VBox contenedorResultados;
-    @FXML
-    private ComboBox<Consola> comboConsola;
-    @FXML
-    private ComboBox<String> comboOrden;
-    @FXML
-    private TextField txtNombre;
-    @FXML
-    private TextField txtPrecioMaximo;
-    @FXML
-    private VBox contenedorFormularioJuego;
-   
+    @FXML private VBox contenedorResultados;
+    @FXML private ComboBox<Consola> comboConsola;
+    @FXML private ComboBox<String> comboGenero;
+    @FXML private ComboBox<String> comboOrden;
+    @FXML private TextField txtNombre;
 
-    
     public void initialize() {
         inicializarCombos();
         mostrarJuegos();
@@ -55,9 +47,22 @@ public class BibliotecaControlador {
 
     @FXML
     private void inicializarCombos() {
-        comboOrden.getItems().addAll("Nombre A-Z", "Nombre Z-A", "Precio ascendente", "Precio descendente");
+        comboOrden.getItems().addAll(
+                "Nombre A-Z",
+                "Nombre Z-A",
+                "Fecha más reciente",
+                "Fecha más antigua"
+        );
         comboOrden.getSelectionModel().selectFirst();
-        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());  
+
+        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());
+
+        comboGenero.getItems().add("Todos");
+        generoServicio.obtenerTodos().stream()
+                .map(g -> g.getNombre())
+                .sorted()
+                .forEach(comboGenero.getItems()::add);
+        comboGenero.getSelectionModel().selectFirst();
     }
 
     @FXML
@@ -65,10 +70,13 @@ public class BibliotecaControlador {
         String nombre = txtNombre.getText().trim().toLowerCase();
         String orden = comboOrden.getValue();
         Consola consolaSeleccionada = comboConsola.getValue();
+        String generoSeleccionado = comboGenero.getValue();
 
         List<Videojuego> filtrados = videojuegoServicio.obtenerTodos().stream()
                 .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
                 .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
+                .filter(j -> generoSeleccionado == null || generoSeleccionado.equals("Todos") ||
+                        j.getGeneros().stream().anyMatch(g -> g.getNombre().equalsIgnoreCase(generoSeleccionado)))
                 .sorted(obtenerComparador(orden))
                 .collect(Collectors.toList());
 
@@ -77,10 +85,10 @@ public class BibliotecaControlador {
 
     private Comparator<Videojuego> obtenerComparador(String orden) {
         return switch (orden) {
-            case "Nombre A-Z" ->
-                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
-            case "Nombre Z-A" ->
-                    Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
+            case "Nombre A-Z" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
+            case "Nombre Z-A" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
+            case "Fecha más reciente" -> Comparator.comparing(Videojuego::getFechaLanzamiento).reversed();
+            case "Fecha más antigua" -> Comparator.comparing(Videojuego::getFechaLanzamiento);
             default -> Comparator.comparing(Videojuego::getNombre);
         };
     }
@@ -139,10 +147,9 @@ public class BibliotecaControlador {
         }
     }
 
-
     @FXML
     private void abrirFormularioAgregarJuego() {
-       abrirPantalla("/vista/pantalla_busqueda.fxml", "Agregar juegos");
+        abrirPantalla("/vista/pantalla_busqueda.fxml", "Agregar juegos");
     }
 
     private void abrirPantalla(String ruta, String titulo) {
@@ -153,7 +160,7 @@ public class BibliotecaControlador {
                 return;
             }
             FXMLLoader loader = new FXMLLoader(url);
-            loader.setControllerFactory(applicationContext::getBean); 
+            loader.setControllerFactory(applicationContext::getBean);
             Parent root = loader.load();
             Stage stage = (Stage) contenedorResultados.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -185,3 +192,4 @@ public class BibliotecaControlador {
         alert.showAndWait();
     }
 }
+

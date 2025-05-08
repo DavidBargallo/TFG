@@ -7,6 +7,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.etg.dam.tfg.programa.controlador.BibliotecaControlador" spacing="10.0" prefHeight="600.0" prefWidth="800.0">
+
     <!-- MenuBar -->
     <MenuBar fx:id="menuBar">
         <menus>
@@ -47,8 +48,8 @@
                 <TextField fx:id="txtNombre" prefWidth="200.0" />
             </HBox>
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <Label text="Precio máximo:" />
-                <TextField fx:id="txtPrecioMaximo" prefWidth="100.0" />
+                <Label text="Género:" />
+                <ComboBox fx:id="comboGenero" prefWidth="150.0" />
                 <Label text="Ordenar por:" />
                 <ComboBox fx:id="comboOrden" prefWidth="150.0" />
             </HBox>
@@ -65,7 +66,6 @@
         </VBox>
     </ScrollPane>
 
-
     <!-- Botón para abrir el formulario de agregar juego -->
     <HBox alignment="CENTER_RIGHT">
         <padding>
@@ -73,4 +73,5 @@
         </padding>
         <Button fx:id="btnAgregarJuego" text="Agregar nuevo juego" onAction="#abrirFormularioAgregarJuego" />
     </HBox>
+
 </VBox>
