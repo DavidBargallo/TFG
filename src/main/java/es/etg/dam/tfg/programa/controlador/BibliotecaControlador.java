@@ -2,7 +2,6 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.Consola;
-import es.etg.dam.tfg.programa.modelo.Genero;
 import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
 import es.etg.dam.tfg.programa.servicio.ConsolaServicio;
 import es.etg.dam.tfg.programa.servicio.GeneroServicio;
@@ -19,12 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import javafx.collections.FXCollections;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -48,41 +44,26 @@ public class BibliotecaControlador {
     @FXML
     private TextField txtPrecioMaximo;
     @FXML
-    private TextField txtNombreJuego;
-    @FXML
-    private DatePicker dateLanzamientoJuego;
-    @FXML
-    private TextField txtPortadaUrlJuego;
-    @FXML
-    private ComboBox<Consola> comboConsolasJuego;
-    @FXML
-    private ComboBox<String> comboGenerosJuego;
-    @FXML
-    private TextField txtCompaniaNombre;
-    @FXML
     private VBox contenedorFormularioJuego;
-    private boolean formularioVisible = false;
+   
 
-    @FXML
+    
     public void initialize() {
         inicializarCombos();
         mostrarJuegos();
     }
 
+    @FXML
     private void inicializarCombos() {
         comboOrden.getItems().addAll("Nombre A-Z", "Nombre Z-A", "Precio ascendente", "Precio descendente");
         comboOrden.getSelectionModel().selectFirst();
-        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());
-        comboConsolasJuego.getItems().addAll(consolaServicio.obtenerTodas());
-        List<String> nombresGeneros = generoServicio.obtenerTodos().stream().map(Genero::getNombre).collect(Collectors.toList());
-        comboGenerosJuego.setItems(FXCollections.observableArrayList(nombresGeneros));
+        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());  
     }
 
     @FXML
     private void aplicarFiltros() {
         String nombre = txtNombre.getText().trim().toLowerCase();
         String orden = comboOrden.getValue();
-        BigDecimal precioMaximo = obtenerPrecioMaximo();
         Consola consolaSeleccionada = comboConsola.getValue();
 
         List<Videojuego> filtrados = videojuegoServicio.obtenerTodos().stream()
@@ -92,15 +73,6 @@ public class BibliotecaControlador {
                 .collect(Collectors.toList());
 
         mostrarJuegos(filtrados);
-    }
-
-    private BigDecimal obtenerPrecioMaximo() {
-        try {
-            return txtPrecioMaximo.getText().isBlank() ? null : new BigDecimal(txtPrecioMaximo.getText());
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Formato de precio incorrecto.");
-            return null;
-        }
     }
 
     private Comparator<Videojuego> obtenerComparador(String orden) {
@@ -199,73 +171,6 @@ public class BibliotecaControlador {
         alert.showAndWait();
     }
 
-    @FXML
-    private void guardarJuego() {
-        String nombre = txtNombreJuego.getText();
-        LocalDate fechaLanzamiento = dateLanzamientoJuego.getValue();
-        String portadaUrl = txtPortadaUrlJuego.getText();
-        Consola consolaSeleccionada = comboConsolasJuego.getValue();
-        String nombreGenero = comboGenerosJuego.getValue();
-        String nombreCompania = txtCompaniaNombre.getText();
-
-        if (nombre == null || nombre.trim().isEmpty() || fechaLanzamiento == null) {
-            mostrarAlerta("Nombre y fecha de lanzamiento son obligatorios.");
-            return;
-        }
-
-        Videojuego nuevoVideojuego = new Videojuego();
-        nuevoVideojuego.setNombre(nombre);
-        nuevoVideojuego.setFechaLanzamiento(fechaLanzamiento);
-        nuevoVideojuego.setPortadaUrl(portadaUrl);
-
-        // Manejo de la Consola
-        if (consolaSeleccionada != null) {
-            Set<Consola> consolas = new HashSet<>();
-            consolas.add(consolaSeleccionada);
-            nuevoVideojuego.setConsolas(consolas);
-        } else {
-            mostrarAlerta("Debes seleccionar al menos una consola.");
-            return;
-        }
-
-        // Manejo del Género
-        if (nombreGenero != null && !nombreGenero.isEmpty()) {
-            Genero genero = generoServicio.obtenerPorNombre(nombreGenero).orElse(null);
-            if (genero == null) {
-                mostrarAlerta("El género seleccionado no existe.");
-                return;
-            }
-            Set<Genero> generos = new HashSet<>();
-            generos.add(genero);
-            nuevoVideojuego.setGeneros(generos);
-        } else {
-            mostrarAlerta("Debes seleccionar al menos un género.");
-            return;
-        }
-        //TODO: Manejo de la Compañia.
-        if (nombreCompania != null && !nombreCompania.isEmpty()) {
-        }
-
-        Videojuego juegoGuardado = videojuegoServicio.guardar(nuevoVideojuego);
-        if (juegoGuardado != null) {
-            mostrarAlerta("Juego guardado correctamente.");
-            mostrarJuegos();
-            limpiarFormularioAgregarJuego();
-            abrirFormularioAgregarJuego();
-        } else {
-            mostrarAlerta("Error al guardar el juego.");
-        }
-    }
-
-    private void limpiarFormularioAgregarJuego() {
-        txtNombreJuego.clear();
-        dateLanzamientoJuego.setValue(null);
-        txtPortadaUrlJuego.clear();
-        comboConsolasJuego.setValue(null);
-        comboGenerosJuego.setValue(null);
-        txtCompaniaNombre.clear();
-    }
-
     private void mostrarDetallesJuego(Videojuego juego) {
         String detalles = "Nombre: " + juego.getNombre() + "\n" +
                 "Fecha de Lanzamiento: " + juego.getFechaLanzamiento() + "\n" +
@@ -280,8 +185,3 @@ public class BibliotecaControlador {
         alert.showAndWait();
     }
 }
-
-
-
-
-

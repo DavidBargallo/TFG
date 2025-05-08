@@ -7,6 +7,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.etg.dam.tfg.programa.controlador.BibliotecaControlador" spacing="10.0" prefHeight="600.0" prefWidth="800.0">
+    <!-- MenuBar -->
     <MenuBar fx:id="menuBar">
         <menus>
             <Menu text="Cuenta">
@@ -32,6 +33,8 @@
             </Menu>
         </menus>
     </MenuBar>
+
+    <!-- Filtros de búsqueda -->
     <TitledPane text="Filtros de búsqueda" expanded="true" collapsible="false">
         <VBox spacing="10.0">
             <padding>
@@ -52,6 +55,8 @@
             <Button fx:id="btnAplicarFiltros" text="Aplicar Filtros" onAction="#aplicarFiltros" prefWidth="200.0" />
         </VBox>
     </TitledPane>
+
+    <!-- Contenedor para mostrar resultados -->
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox fx:id="contenedorResultados" spacing="10.0">
             <padding>
@@ -59,6 +64,9 @@
             </padding>
         </VBox>
     </ScrollPane>
+
+
+    <!-- Botón para abrir el formulario de agregar juego -->
     <HBox alignment="CENTER_RIGHT">
         <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

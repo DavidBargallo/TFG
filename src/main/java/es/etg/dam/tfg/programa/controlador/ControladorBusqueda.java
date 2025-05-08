@@ -1,13 +1,19 @@
 package es.etg.dam.tfg.programa.controlador;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import es.etg.dam.tfg.programa.modelo.Consola;
+import es.etg.dam.tfg.programa.modelo.Genero;
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
+import es.etg.dam.tfg.programa.repositorio.ConsolaRepositorio;
+import es.etg.dam.tfg.programa.repositorio.GeneroRepositorio;
 import es.etg.dam.tfg.programa.repositorio.UsuarioVideojuegoRepositorio;
 import es.etg.dam.tfg.programa.repositorio.VideojuegoRepositorio;
 import es.etg.dam.tfg.programa.servicio.RawgApiServicio;
+import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
 import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -21,7 +27,9 @@ import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,6 +38,10 @@ public class ControladorBusqueda {
     private final VideojuegoRepositorio videojuegoRepositorio;
     private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
     private final RawgApiServicio rawgApiServicio;
+    private final GeneroRepositorio generoRepositorio;
+    private final ConsolaRepositorio consolaRepositorio;
+    private final VideojuegoServicio videojuegoServicio;
+
 
     @FXML private ComboBox<String> comboConsolaApi;
     @FXML private TextField txtNombreApi;
@@ -55,7 +67,7 @@ public class ControladorBusqueda {
 
     try {
         JsonNode juegos = rawgApiServicio.buscarJuegos(nombre);
-        contenedorResultadosApi.getChildren().clear(); // Limpiar anteriores
+        contenedorResultadosApi.getChildren().clear(); 
 
         for (JsonNode juego : juegos) {
             contenedorResultadosApi.getChildren().add(crearFichaJuego(juego));
@@ -94,7 +106,8 @@ public class ControladorBusqueda {
                     hBox.getChildren().add(btnAgregar);
                 }
             } else {
-                Button btnAgregar = crearBotonAgregar(usuario, null, new VideojuegoTemp(nombreJuego, fechaLanzamiento, imagenUrl));
+                Button btnAgregar = crearBotonAgregar(usuario, null, new VideojuegoTemp(nombreJuego, fechaLanzamiento, imagenUrl, juegoJson));
+
                 hBox.getChildren().add(btnAgregar);
             }
         }
@@ -102,42 +115,75 @@ public class ControladorBusqueda {
         return hBox;
     }
 
-    private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp juegoNuevo) {
-        Button btnAgregar = new Button("Agregar a biblioteca");
-        btnAgregar.setOnAction(e -> {
-            try {
-                Videojuego videojuego = juegoExistente;
-                if (videojuego == null && juegoNuevo != null) {
-                    videojuego = new Videojuego();
-                    videojuego.setNombre(juegoNuevo.nombre());
-                    videojuego.setFechaLanzamiento(juegoNuevo.fecha());
-                    videojuego.setPortadaUrl(juegoNuevo.imagenUrl());
-                    videojuego.setEsFisico(false);
-                    videojuego = videojuegoRepositorio.save(videojuego);
+    @FXML
+   private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp juegoNuevo) {
+    Button btnAgregar = new Button("Agregar a biblioteca");
+    btnAgregar.setOnAction(e -> {
+        try {
+            Videojuego videojuego = juegoExistente;
+
+            if (videojuego == null && juegoNuevo != null) {
+                // Crear nuevo videojuego
+                videojuego = new Videojuego();
+                videojuego.setNombre(juegoNuevo.nombre());
+                videojuego.setFechaLanzamiento(juegoNuevo.fecha());
+                videojuego.setPortadaUrl(juegoNuevo.imagenUrl());
+                videojuego.setEsFisico(false);
+
+                // Obtener géneros del JSON original
+                Set<Genero> generos = new HashSet<>();
+                if (juegoNuevo.json().has("genres")) {
+                    for (JsonNode generoNode : juegoNuevo.json().get("genres")) {
+                        String nombreGenero = generoNode.get("name").asText();
+                        Genero genero = generoRepositorio.findByNombre(nombreGenero).orElseGet(() -> {
+                            Genero nuevo = new Genero();
+                            nuevo.setNombre(nombreGenero);
+                            nuevo.setDescripcion(""); 
+                            return generoRepositorio.save(nuevo);
+                        });
+                        
+                        generos.add(genero);
+                    }
                 }
-    
-                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
-                if (usuarioVideojuegoRepositorio.existsById(id)) {
-                    mostrarAlerta("El juego ya está en tu biblioteca.");
-                    return;
+                videojuego.setGeneros(generos);
+
+                // Obtener consolas del JSON original
+                Set<Consola> consolas = new HashSet<>();
+                if (juegoNuevo.json().has("platforms")) {
+                    for (JsonNode plataformaNode : juegoNuevo.json().get("platforms")) {
+                        String nombrePlataforma = plataformaNode.get("platform").get("name").asText();
+                        consolaRepositorio.findByNombre(nombrePlataforma).ifPresent(consolas::add);
+                    }
                 }
-    
-                UsuarioVideojuego relacion = new UsuarioVideojuego();
-                relacion.setId(id);
-                relacion.setUsuario(usuario);
-                relacion.setVideojuego(videojuego);
-                relacion.setEnWishlist(false);
-                usuarioVideojuegoRepositorio.save(relacion);
-    
-                mostrarAlerta("¡Juego agregado a tu biblioteca!");
-            } catch (Exception ex) {
-                mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
+                videojuego.setConsolas(consolas);
+
+                // Guardar en la base de datos
+                videojuego = videojuegoServicio.guardar(videojuego);
             }
-        });
-    
-        return btnAgregar;
-    }
-    
+
+            // Relación con el usuario
+            UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
+            if (usuarioVideojuegoRepositorio.existsById(id)) {
+                mostrarAlerta("El juego ya está en tu biblioteca.");
+                return;
+            }
+
+            UsuarioVideojuego relacion = new UsuarioVideojuego();
+            relacion.setId(id);
+            relacion.setUsuario(usuario);
+            relacion.setVideojuego(videojuego);
+            relacion.setEnWishlist(false);
+            usuarioVideojuegoRepositorio.save(relacion);
+
+            mostrarAlerta("¡Juego agregado a tu biblioteca!");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
+        }
+    });
+
+    return btnAgregar;
+}
 
     private void mostrarAlerta(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -147,5 +193,6 @@ public class ControladorBusqueda {
         alert.showAndWait();
     }
 
-    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl) {}
+    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {}
+
 }

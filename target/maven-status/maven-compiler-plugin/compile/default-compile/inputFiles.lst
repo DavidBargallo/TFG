@@ -19,10 +19,14 @@ C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Esta
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Fabricante.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Genero.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\ids\UsuarioVideojuegoID.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\ids\VideojuegoConsolaID.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\ids\VideojuegoGeneroID.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Ubicacion.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Usuario.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\UsuarioVideojuego.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\Videojuego.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\VideojuegoConsola.java
+C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\modelo\VideojuegoGenero.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\CompaniaRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\ConsolaRepositorio.java
 C:\Users\david\Desktop\app_tfg\src\main\java\es\etg\dam\tfg\programa\repositorio\EstadoRepositorio.java
