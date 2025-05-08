@@ -27,7 +27,9 @@ import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,13 +44,18 @@ public class ControladorBusqueda {
     private final ConsolaRepositorio consolaRepositorio;
     private final VideojuegoServicio videojuegoServicio;
 
-
-    @FXML private ComboBox<String> comboConsolaApi;
-    @FXML private TextField txtNombreApi;
-    @FXML private TextField txtPrecioMaxApi;
-    @FXML private ComboBox<String> comboOrdenApi;
-    @FXML private VBox contenedorResultadosApi;
-    @FXML private Button btnBuscarApi;
+    @FXML
+    private ComboBox<String> comboConsolaApi;
+    @FXML
+    private TextField txtNombreApi;
+    @FXML
+    private TextField txtPrecioMaxApi;
+    @FXML
+    private ComboBox<String> comboOrdenApi;
+    @FXML
+    private VBox contenedorResultadosApi;
+    @FXML
+    private Button btnBuscarApi;
 
     @FXML
     public void initialize() {
@@ -58,26 +65,25 @@ public class ControladorBusqueda {
     }
 
     private void buscarJuegos(ActionEvent event) {
-    String nombre = txtNombreApi.getText().trim();
+        String nombre = txtNombreApi.getText().trim();
 
-    if (nombre.isEmpty()) {
-        mostrarAlerta("Por favor, introduce un nombre para buscar.");
-        return;
-    }
-
-    try {
-        JsonNode juegos = rawgApiServicio.buscarJuegos(nombre);
-        contenedorResultadosApi.getChildren().clear(); 
-
-        for (JsonNode juego : juegos) {
-            contenedorResultadosApi.getChildren().add(crearFichaJuego(juego));
+        if (nombre.isEmpty()) {
+            mostrarAlerta("Por favor, introduce un nombre para buscar.");
+            return;
         }
-    } catch (IOException | InterruptedException e) {
-        e.printStackTrace();
-        mostrarAlerta("Error al buscar juegos: " + e.getMessage());
-    }
-}
 
+        try {
+            JsonNode juegos = rawgApiServicio.buscarJuegos(nombre);
+            contenedorResultadosApi.getChildren().clear();
+
+            for (JsonNode juego : juegos) {
+                contenedorResultadosApi.getChildren().add(crearFichaJuego(juego));
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error al buscar juegos: " + e.getMessage());
+        }
+    }
 
     private HBox crearFichaJuego(JsonNode juegoJson) {
         String nombreJuego = juegoJson.get("name").asText();
@@ -95,7 +101,8 @@ public class ControladorBusqueda {
 
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario != null) {
-            Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombreJuego, fechaLanzamiento);
+            Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombreJuego,
+                    fechaLanzamiento);
 
             if (existente.isPresent()) {
                 Videojuego juegoBD = existente.get();
@@ -106,7 +113,8 @@ public class ControladorBusqueda {
                     hBox.getChildren().add(btnAgregar);
                 }
             } else {
-                Button btnAgregar = crearBotonAgregar(usuario, null, new VideojuegoTemp(nombreJuego, fechaLanzamiento, imagenUrl, juegoJson));
+                Button btnAgregar = crearBotonAgregar(usuario, null,
+                        new VideojuegoTemp(nombreJuego, fechaLanzamiento, imagenUrl, juegoJson));
 
                 hBox.getChildren().add(btnAgregar);
             }
@@ -115,75 +123,123 @@ public class ControladorBusqueda {
         return hBox;
     }
 
-    @FXML
-   private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp juegoNuevo) {
-    Button btnAgregar = new Button("Agregar a biblioteca");
-    btnAgregar.setOnAction(e -> {
-        try {
-            Videojuego videojuego = juegoExistente;
+    private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp juegoNuevo) {
+        Button btnAgregar = new Button("Agregar a biblioteca");
+        btnAgregar.setOnAction(e -> {
+            try {
+                Videojuego videojuego = juegoExistente;
 
-            if (videojuego == null && juegoNuevo != null) {
-                // Crear nuevo videojuego
-                videojuego = new Videojuego();
-                videojuego.setNombre(juegoNuevo.nombre());
-                videojuego.setFechaLanzamiento(juegoNuevo.fecha());
-                videojuego.setPortadaUrl(juegoNuevo.imagenUrl());
-                videojuego.setEsFisico(false);
+                if (videojuego == null && juegoNuevo != null) {
+                    videojuego = new Videojuego();
+                    videojuego.setNombre(juegoNuevo.nombre());
+                    videojuego.setFechaLanzamiento(juegoNuevo.fecha());
+                    videojuego.setPortadaUrl(juegoNuevo.imagenUrl());
+                    videojuego.setEsFisico(false);
 
-                // Obtener géneros del JSON original
-                Set<Genero> generos = new HashSet<>();
-                if (juegoNuevo.json().has("genres")) {
-                    for (JsonNode generoNode : juegoNuevo.json().get("genres")) {
-                        String nombreGenero = generoNode.get("name").asText();
-                        Genero genero = generoRepositorio.findByNombre(nombreGenero).orElseGet(() -> {
-                            Genero nuevo = new Genero();
-                            nuevo.setNombre(nombreGenero);
-                            nuevo.setDescripcion(""); 
-                            return generoRepositorio.save(nuevo);
-                        });
-                        
-                        generos.add(genero);
+                    // Procesar géneros
+                    Set<Genero> generos = new HashSet<>();
+                    if (juegoNuevo.json().has("genres")) {
+                        for (JsonNode generoNode : juegoNuevo.json().get("genres")) {
+                            String nombreGenero = generoNode.get("name").asText();
+                            Genero genero = generoRepositorio.findByNombre(nombreGenero).orElseGet(() -> {
+                                Genero nuevo = new Genero();
+                                nuevo.setNombre(nombreGenero);
+                                nuevo.setDescripcion("");
+                                return generoRepositorio.save(nuevo);
+                            });
+                            generos.add(genero);
+                        }
                     }
-                }
-                videojuego.setGeneros(generos);
+                    videojuego.setGeneros(generos);
 
-                // Obtener consolas del JSON original
-                Set<Consola> consolas = new HashSet<>();
-                if (juegoNuevo.json().has("platforms")) {
-                    for (JsonNode plataformaNode : juegoNuevo.json().get("platforms")) {
-                        String nombrePlataforma = plataformaNode.get("platform").get("name").asText();
-                        consolaRepositorio.findByNombre(nombrePlataforma).ifPresent(consolas::add);
+                    // Procesar consolas
+                    Set<Consola> consolasValidas = new HashSet<>();
+                    List<Consola> consolasDisponibles = new ArrayList<>();
+
+                    if (juegoNuevo.json().has("platforms")) {
+                        for (JsonNode plataformaNode : juegoNuevo.json().get("platforms")) {
+                            String nombrePlataforma = plataformaNode.get("platform").get("name").asText();
+
+                            // Buscar o crear consola
+                            Consola consola = consolaRepositorio.findByNombre(nombrePlataforma).orElseGet(() -> {
+                                Consola nueva = new Consola();
+                                nueva.setNombre(nombrePlataforma);
+                                nueva.setFechaLanzamiento(null); // puedes adaptarlo en el futuro
+                                nueva.setFabricante(null); // de momento lo dejamos en null
+                                return consolaRepositorio.save(nueva);
+                            });
+
+                            consolasDisponibles.add(consola);
+                        }
                     }
+
+                    if (consolasDisponibles.isEmpty()) {
+                        mostrarAlerta("No se encontraron consolas en la información del juego.");
+                        return;
+                    }
+
+                    // Selección de consola si hay varias
+                    Consola consolaSeleccionada;
+                    if (consolasDisponibles.size() == 1) {
+                        consolaSeleccionada = consolasDisponibles.get(0);
+                    } else {
+                        List<String> nombresConsolas = consolasDisponibles.stream()
+                                .map(Consola::getNombre)
+                                .toList();
+
+                        ChoiceDialog<String> dialog = new ChoiceDialog<>(nombresConsolas.get(0), nombresConsolas);
+                        dialog.setTitle("Seleccionar consola");
+                        dialog.setHeaderText("Elige una consola para agregar el juego:");
+                        dialog.setContentText("Consola:");
+
+                        Optional<String> result = dialog.showAndWait();
+                        if (result.isEmpty()) {
+                            return;
+                        }
+
+                        String nombreElegido = result.get();
+                        consolaSeleccionada = consolasDisponibles.stream()
+                                .filter(c -> c.getNombre().equals(nombreElegido))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (consolaSeleccionada == null) {
+                            mostrarAlerta("Error al seleccionar la consola.");
+                            return;
+                        }
+                    }
+
+                    consolasValidas.add(consolaSeleccionada);
+                    videojuego.setConsolas(consolasValidas);
+
+                    // Guardar videojuego
+                    videojuego = videojuegoServicio.guardar(videojuego);
                 }
-                videojuego.setConsolas(consolas);
 
-                // Guardar en la base de datos
-                videojuego = videojuegoServicio.guardar(videojuego);
+                // Relación usuario-videojuego
+                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
+                if (usuarioVideojuegoRepositorio.existsById(id)) {
+                    mostrarAlerta("El juego ya está en tu biblioteca.");
+                    return;
+                }
+
+                UsuarioVideojuego relacion = new UsuarioVideojuego();
+                relacion.setId(id);
+                relacion.setUsuario(usuario);
+                relacion.setVideojuego(videojuego);
+                relacion.setEnWishlist(false);
+                usuarioVideojuegoRepositorio.save(relacion);
+
+                mostrarAlerta("¡Juego agregado a tu biblioteca!");
+                btnAgregar.setVisible(false);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
             }
+        });
 
-            // Relación con el usuario
-            UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
-            if (usuarioVideojuegoRepositorio.existsById(id)) {
-                mostrarAlerta("El juego ya está en tu biblioteca.");
-                return;
-            }
-
-            UsuarioVideojuego relacion = new UsuarioVideojuego();
-            relacion.setId(id);
-            relacion.setUsuario(usuario);
-            relacion.setVideojuego(videojuego);
-            relacion.setEnWishlist(false);
-            usuarioVideojuegoRepositorio.save(relacion);
-
-            mostrarAlerta("¡Juego agregado a tu biblioteca!");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
-        }
-    });
-
-    return btnAgregar;
-}
+        return btnAgregar;
+    }
 
     private void mostrarAlerta(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -193,6 +249,7 @@ public class ControladorBusqueda {
         alert.showAndWait();
     }
 
-    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {}
+    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {
+    }
 
 }
