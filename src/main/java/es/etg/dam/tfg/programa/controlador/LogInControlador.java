@@ -66,6 +66,7 @@ public class LogInControlador {
                 if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
                     lblError.setText("Inicio de sesión exitoso!");
                     lblError.setVisible(true);
+                    Sesion.cerrarSesion();
                     Sesion.iniciarSesion(usuario);
                     abrirPantallaPrincipal(usuario, event);
                 } else {
@@ -106,15 +107,24 @@ public class LogInControlador {
             FXMLLoader loader = new FXMLLoader(bibliotecaURL);
             loader.setControllerFactory(applicationContext::getBean);
             Parent root = loader.load();
-            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Mi Biblioteca de Juegos");
-            stage.show();
+    
+            
+            BibliotecaControlador controlador = loader.getController();
+            controlador.inicializarBiblioteca();
+    
+            
+            Stage oldStage = (Stage) ((Control) event.getSource()).getScene().getWindow();
+            oldStage.close();
+    
+            Stage newStage = new Stage();
+            newStage.setScene(new Scene(root));
+            newStage.setTitle("Mi Biblioteca de Juegos");
+            newStage.show();
+    
         } catch (IOException e) {
             logger.error("Error al cargar la pantalla principal", e);
             lblError.setText("Error al cargar la pantalla principal: " + e.getMessage());
             lblError.setVisible(true);
         }
-    }
+    }  
 }

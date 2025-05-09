@@ -21,8 +21,9 @@ public class UsuarioVideojuegoServicio {
     }
 
     public List<UsuarioVideojuego> obtenerVideojuegosPorUsuario(Integer usuarioId) {
-        return usuarioVideojuegoRepositorio.findByUsuarioId(usuarioId);
+        return usuarioVideojuegoRepositorio.findWithVideojuegoCompletoByUsuarioId(usuarioId);
     }
+    
 
     public boolean tieneVideojuego(Integer usuarioId, Integer videojuegoId) {
         return usuarioVideojuegoRepositorio.existsByUsuarioIdAndVideojuegoId(usuarioId, videojuegoId);

@@ -15,7 +15,7 @@
                 <items>
                     <MenuItem fx:id="menuPerfil" text="Perfil" />
                     <MenuItem fx:id="menuCambiarContrasena" text="Cambiar contraseña" />
-                    <MenuItem fx:id="menuCerrarSesion" text="Cerrar sesión" />
+                    <MenuItem fx:id="menuCerrarSesion" text="Cerrar sesión" onAction="#cerrarSesion" />
                 </items>
             </Menu>
             <Menu text="Wishlist">

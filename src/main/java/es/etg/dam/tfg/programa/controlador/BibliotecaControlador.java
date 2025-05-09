@@ -2,9 +2,11 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.Consola;
-import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
+import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.servicio.ConsolaServicio;
 import es.etg.dam.tfg.programa.servicio.GeneroServicio;
+import es.etg.dam.tfg.programa.servicio.UsuarioVideojuegoServicio;
+import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,18 +31,33 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BibliotecaControlador {
 
-    private final VideojuegoServicio videojuegoServicio;
     private final ConsolaServicio consolaServicio;
     private final GeneroServicio generoServicio;
+    private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final ApplicationContext applicationContext;
 
-    @FXML private VBox contenedorResultados;
-    @FXML private ComboBox<Consola> comboConsola;
-    @FXML private ComboBox<String> comboGenero;
-    @FXML private ComboBox<String> comboOrden;
-    @FXML private TextField txtNombre;
+    @FXML
+    private VBox contenedorResultados;
+    @FXML
+    private ComboBox<Consola> comboConsola;
+    @FXML
+    private ComboBox<String> comboGenero;
+    @FXML
+    private ComboBox<String> comboOrden;
+    @FXML
+    private TextField txtNombre;
 
+    @FXML
     public void initialize() {
+
+    }
+
+    public void inicializarBiblioteca() {
+        if (Sesion.getUsuarioActual() == null) {
+            mostrarAlerta("No se ha iniciado sesión.");
+            return;
+        }
+
         inicializarCombos();
         mostrarJuegos();
     }
@@ -51,8 +68,7 @@ public class BibliotecaControlador {
                 "Nombre A-Z",
                 "Nombre Z-A",
                 "Fecha más reciente",
-                "Fecha más antigua"
-        );
+                "Fecha más antigua");
         comboOrden.getSelectionModel().selectFirst();
 
         comboConsola.getItems().addAll(consolaServicio.obtenerTodas());
@@ -72,7 +88,7 @@ public class BibliotecaControlador {
         Consola consolaSeleccionada = comboConsola.getValue();
         String generoSeleccionado = comboGenero.getValue();
 
-        List<Videojuego> filtrados = videojuegoServicio.obtenerTodos().stream()
+        List<Videojuego> filtrados = cargarJuegosUsuario().stream()
                 .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
                 .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
                 .filter(j -> generoSeleccionado == null || generoSeleccionado.equals("Todos") ||
@@ -81,6 +97,18 @@ public class BibliotecaControlador {
                 .collect(Collectors.toList());
 
         mostrarJuegos(filtrados);
+    }
+
+    private List<Videojuego> cargarJuegosUsuario() {
+        var usuario = Sesion.getUsuarioActual();
+        if (usuario == null)
+            return Collections.emptyList();
+
+        return usuarioVideojuegoServicio
+                .obtenerVideojuegosPorUsuario(usuario.getId())
+                .stream()
+                .map(UsuarioVideojuego::getVideojuego)
+                .collect(Collectors.toList());
     }
 
     private Comparator<Videojuego> obtenerComparador(String orden) {
@@ -94,8 +122,7 @@ public class BibliotecaControlador {
     }
 
     private void mostrarJuegos() {
-        List<Videojuego> juegos = videojuegoServicio.obtenerTodos();
-        mostrarJuegos(juegos);
+        mostrarJuegos(cargarJuegosUsuario());
     }
 
     private void mostrarJuegos(List<Videojuego> juegos) {
@@ -118,7 +145,8 @@ public class BibliotecaControlador {
         Label lblNombre = new Label("Nombre: " + juego.getNombre());
         Label lblConsolas = new Label("Consolas: " + obtenerNombres(juego.getConsolas()));
         Label lblGeneros = new Label("Géneros: " + obtenerNombres(juego.getGeneros()));
-        Label lblEmpresa = new Label("Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
+        Label lblEmpresa = new Label(
+                "Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
 
         ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa);
         ficha.setOnMouseClicked(event -> mostrarDetallesJuego(juego));
@@ -152,6 +180,12 @@ public class BibliotecaControlador {
         abrirPantalla("/vista/pantalla_busqueda.fxml", "Agregar juegos");
     }
 
+    @FXML
+    private void cerrarSesion() {
+        Sesion.cerrarSesion();
+        abrirPantalla("/vista/pantalla_inicio.fxml", "Iniciar sesión");
+    }
+
     private void abrirPantalla(String ruta, String titulo) {
         try {
             URL url = getClass().getResource(ruta);
@@ -159,13 +193,19 @@ public class BibliotecaControlador {
                 mostrarAlerta("No se pudo encontrar el recurso FXML: " + ruta);
                 return;
             }
+
             FXMLLoader loader = new FXMLLoader(url);
             loader.setControllerFactory(applicationContext::getBean);
             Parent root = loader.load();
+
             Stage stage = (Stage) contenedorResultados.getScene().getWindow();
+
+            stage.setOnCloseRequest(e -> Sesion.cerrarSesion());
+
             stage.setScene(new Scene(root));
             stage.setTitle(titulo);
             stage.show();
+
         } catch (IOException e) {
             mostrarAlerta("Error al abrir la pantalla.");
         }
@@ -192,4 +232,3 @@ public class BibliotecaControlador {
         alert.showAndWait();
     }
 }
-

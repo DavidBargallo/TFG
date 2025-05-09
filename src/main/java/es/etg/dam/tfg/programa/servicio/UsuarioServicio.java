@@ -53,13 +53,11 @@ public class UsuarioServicio {
             throw new IllegalArgumentException("El correo electrónico ya existe");
         }
 
-        // Encriptar la contraseña
         String hashedContrasena = passwordEncoder.encode(usuario.getContrasena());
         usuario.setContrasena(hashedContrasena);
         return usuarioRepositorio.save(usuario);
     }
 
-    // El resto de los métodos del servicio permanecen igual
     public Optional<Usuario> obtenerPorId(Integer id) {
         return usuarioRepositorio.findById(id);
     }
