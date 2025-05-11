@@ -35,6 +35,9 @@ public class BibliotecaControlador {
     private final GeneroServicio generoServicio;
     private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final ApplicationContext applicationContext;
+    private static final int JUEGOS_POR_PAGINA = 10;
+    private int paginaActual = 0;
+    private List<Videojuego> juegosFiltrados = new ArrayList<>();
 
     @FXML
     private VBox contenedorResultados;
@@ -46,6 +49,10 @@ public class BibliotecaControlador {
     private ComboBox<String> comboOrden;
     @FXML
     private TextField txtNombre;
+    @FXML
+    private Button btnAnterior, btnSiguiente;
+    @FXML
+    private Label lblPagina;
 
     @FXML
     public void initialize() {
@@ -122,8 +129,41 @@ public class BibliotecaControlador {
     }
 
     private void mostrarJuegos() {
-        mostrarJuegos(cargarJuegosUsuario());
+        juegosFiltrados = cargarJuegosUsuario(); 
+        paginaActual = 0;
+        mostrarPaginaActual();
     }
+
+    private void mostrarPaginaActual() {
+    int start = paginaActual * JUEGOS_POR_PAGINA;
+    int end = Math.min(start + JUEGOS_POR_PAGINA, juegosFiltrados.size());
+    List<Videojuego> pagina = juegosFiltrados.subList(start, end);
+
+    contenedorResultados.getChildren().clear();
+    for (Videojuego juego : pagina) {
+        contenedorResultados.getChildren().add(crearFichaJuego(juego));
+    }
+
+    lblPagina.setText("Página " + (paginaActual + 1) + " de " + ((juegosFiltrados.size() - 1) / JUEGOS_POR_PAGINA + 1));
+    btnAnterior.setDisable(paginaActual == 0);
+    btnSiguiente.setDisable(end >= juegosFiltrados.size());
+}
+
+@FXML
+private void paginaAnterior() {
+    if (paginaActual > 0) {
+        paginaActual--;
+        mostrarPaginaActual();
+    }
+}
+
+@FXML
+private void paginaSiguiente() {
+    if ((paginaActual + 1) * JUEGOS_POR_PAGINA < juegosFiltrados.size()) {
+        paginaActual++;
+        mostrarPaginaActual();
+    }
+}
 
     private void mostrarJuegos(List<Videojuego> juegos) {
         contenedorResultados.getChildren().clear();
@@ -148,9 +188,27 @@ public class BibliotecaControlador {
         Label lblEmpresa = new Label(
                 "Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
 
-        ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa);
+        Button btnEliminar = new Button("Eliminar");
+        btnEliminar.setOnAction(e -> eliminarJuego(juego));
+
+        ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa, btnEliminar);
         ficha.setOnMouseClicked(event -> mostrarDetallesJuego(juego));
         return ficha;
+    }
+
+    private void eliminarJuego(Videojuego juego) {
+        var usuario = Sesion.getUsuarioActual();
+        if (usuario == null)
+            return;
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION,
+                "¿Estás seguro de que quieres eliminar este juego?", ButtonType.YES, ButtonType.NO);
+        confirmacion.showAndWait().ifPresent(respuesta -> {
+            if (respuesta == ButtonType.YES) {
+                usuarioVideojuegoServicio.eliminarRelacionUsuarioVideojuego(usuario.getId(), juego.getId());
+                mostrarJuegos();
+            }
+        });
     }
 
     private void cargarImagen(ImageView imageView, String url) {

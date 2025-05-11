@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
 import es.etg.dam.tfg.programa.repositorio.UsuarioVideojuegoRepositorio;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,6 @@ public class UsuarioVideojuegoServicio {
     public List<UsuarioVideojuego> obtenerVideojuegosPorUsuario(Integer usuarioId) {
         return usuarioVideojuegoRepositorio.findWithVideojuegoCompletoByUsuarioId(usuarioId);
     }
-    
 
     public boolean tieneVideojuego(Integer usuarioId, Integer videojuegoId) {
         return usuarioVideojuegoRepositorio.existsByUsuarioIdAndVideojuegoId(usuarioId, videojuegoId);
@@ -40,5 +40,10 @@ public class UsuarioVideojuegoServicio {
     public List<UsuarioVideojuego> obtenerVideojuegosEnWishlist(Integer usuarioId) {
         return usuarioVideojuegoRepositorio.findByUsuarioIdAndEnWishlist(usuarioId, true);
     }
-}
 
+    @Transactional
+    public void eliminarRelacionUsuarioVideojuego(Integer usuarioId, Integer videojuegoId) {
+        UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuarioId, videojuegoId);
+        usuarioVideojuegoRepositorio.deleteById(id);
+    }
+}

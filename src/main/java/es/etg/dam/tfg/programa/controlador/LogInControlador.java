@@ -27,6 +27,9 @@ public class LogInControlador {
     //Nombre usuario: David
     //Password: Contras3ña!
 
+    //Nombre usuario: Test
+    //Password: Contras4ña!
+
     private static final Logger logger = LoggerFactory.getLogger(LogInControlador.class);
 
     @FXML
