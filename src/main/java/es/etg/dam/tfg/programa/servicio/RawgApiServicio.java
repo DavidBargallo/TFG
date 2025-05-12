@@ -10,6 +10,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,20 +24,41 @@ public class RawgApiServicio {
 
     private final ObjectMapper objectMapper;
 
-    public JsonNode buscarJuegos(String query, int page, int pageSize) throws IOException, InterruptedException {
-        String url = String.format("%s/games?search=%s&page=%d&page_size=%d&key=%s",
-                BASE_URL, query.replace(" ", "%20"), page, pageSize, API_KEY);
+    public JsonNode buscarJuegos(String nombre, Integer generoId, Integer plataformaId, String orden, int page, int pageSize)
+        throws IOException, InterruptedException {
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
+    StringBuilder url = new StringBuilder(BASE_URL + "/games?");
+    url.append("page=").append(page)
+       .append("&page_size=").append(pageSize)
+       .append("&key=").append(API_KEY);
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        return objectMapper.readTree(response.body()).get("results");
+    if (nombre != null && !nombre.isBlank()) {
+        url.append("&search=").append(URLEncoder.encode(nombre, StandardCharsets.UTF_8));
     }
+    if (generoId != null) {
+        url.append("&genres=").append(generoId);
+    }
+    if (plataformaId != null) {
+        url.append("&platforms=").append(plataformaId);
+    }
+    if (orden != null) {
+        if (orden.equals("Fecha más reciente")) {
+            url.append("&ordering=-released");
+        } else if (orden.equals("Fecha más antigua")) {
+            url.append("&ordering=released");
+        }
+    }
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url.toString()))
+            .GET()
+            .build();
+
+    HttpClient client = HttpClient.newHttpClient();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+    return objectMapper.readTree(response.body());
+}
 
     public JsonNode obtenerJuegoPorId(String id) throws IOException, InterruptedException {
         String url = String.format("%s/games/%s?key=%s", BASE_URL, id, API_KEY);

@@ -129,41 +129,42 @@ public class BibliotecaControlador {
     }
 
     private void mostrarJuegos() {
-        juegosFiltrados = cargarJuegosUsuario(); 
+        juegosFiltrados = cargarJuegosUsuario();
         paginaActual = 0;
         mostrarPaginaActual();
     }
 
     private void mostrarPaginaActual() {
-    int start = paginaActual * JUEGOS_POR_PAGINA;
-    int end = Math.min(start + JUEGOS_POR_PAGINA, juegosFiltrados.size());
-    List<Videojuego> pagina = juegosFiltrados.subList(start, end);
+        int start = paginaActual * JUEGOS_POR_PAGINA;
+        int end = Math.min(start + JUEGOS_POR_PAGINA, juegosFiltrados.size());
+        List<Videojuego> pagina = juegosFiltrados.subList(start, end);
 
-    contenedorResultados.getChildren().clear();
-    for (Videojuego juego : pagina) {
-        contenedorResultados.getChildren().add(crearFichaJuego(juego));
+        contenedorResultados.getChildren().clear();
+        for (Videojuego juego : pagina) {
+            contenedorResultados.getChildren().add(crearFichaJuego(juego));
+        }
+
+        lblPagina.setText(
+                "Página " + (paginaActual + 1) + " de " + ((juegosFiltrados.size() - 1) / JUEGOS_POR_PAGINA + 1));
+        btnAnterior.setDisable(paginaActual == 0);
+        btnSiguiente.setDisable(end >= juegosFiltrados.size());
     }
 
-    lblPagina.setText("Página " + (paginaActual + 1) + " de " + ((juegosFiltrados.size() - 1) / JUEGOS_POR_PAGINA + 1));
-    btnAnterior.setDisable(paginaActual == 0);
-    btnSiguiente.setDisable(end >= juegosFiltrados.size());
-}
-
-@FXML
-private void paginaAnterior() {
-    if (paginaActual > 0) {
-        paginaActual--;
-        mostrarPaginaActual();
+    @FXML
+    private void paginaAnterior() {
+        if (paginaActual > 0) {
+            paginaActual--;
+            mostrarPaginaActual();
+        }
     }
-}
 
-@FXML
-private void paginaSiguiente() {
-    if ((paginaActual + 1) * JUEGOS_POR_PAGINA < juegosFiltrados.size()) {
-        paginaActual++;
-        mostrarPaginaActual();
+    @FXML
+    private void paginaSiguiente() {
+        if ((paginaActual + 1) * JUEGOS_POR_PAGINA < juegosFiltrados.size()) {
+            paginaActual++;
+            mostrarPaginaActual();
+        }
     }
-}
 
     private void mostrarJuegos(List<Videojuego> juegos) {
         contenedorResultados.getChildren().clear();
@@ -236,6 +237,11 @@ private void paginaSiguiente() {
     @FXML
     private void abrirFormularioAgregarJuego() {
         abrirPantalla("/vista/pantalla_busqueda.fxml", "Agregar juegos");
+    }
+
+    @FXML
+    private void abrirEstadisticas() {
+        abrirPantalla("/vista/pantalla_estadisticas.fxml", "Estadísticas");
     }
 
     @FXML

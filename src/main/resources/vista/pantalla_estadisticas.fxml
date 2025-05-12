@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="es.etg.dam.tfg.programa.controlador.EstadisticasControlador"
+      spacing="15" prefHeight="600" prefWidth="800">
+
+    <MenuBar>
+        <menus>
+            <Menu text="Volver">
+                <items>
+                    <MenuItem fx:id="menuVolverBiblioteca" text="Volver a Biblioteca" onAction="#volverABiblioteca"/>
+                </items>
+            </Menu>
+        </menus>
+    </MenuBar>
+
+    <TitledPane text="Estadísticas de tu Biblioteca" expanded="true" collapsible="false">
+        <VBox spacing="10">
+            <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>
+
+            <Label fx:id="lblGeneroFavorito" text="Género más frecuente: -" />
+            <Label fx:id="lblConsolaFavorita" text="Consola más frecuente: -" />
+            <Label fx:id="lblTotalFisicos" text="Juegos físicos: -" />
+            <Label fx:id="lblTotalDigitales" text="Juegos digitales: -" />
+        </VBox>
+    </TitledPane>
+
+    <TitledPane text="Gráficos de usuario" expanded="true" collapsible="false">
+    <VBox spacing="20.0" alignment="CENTER">
+        <HBox spacing="50.0" alignment="CENTER">
+            <VBox alignment="CENTER">
+                <Label text="Géneros más frecuentes" />
+                <PieChart fx:id="graficoGeneros" prefWidth="300" prefHeight="300" />
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="Juegos por consola" />
+                <BarChart fx:id="graficoConsolas" prefWidth="400" prefHeight="300">
+                    <xAxis>
+                        <CategoryAxis label="Consolas"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="Número de juegos"/>
+                    </yAxis>
+                </BarChart>
+            </VBox>
+        </HBox>
+    </VBox>
+</TitledPane>
+</VBox>
