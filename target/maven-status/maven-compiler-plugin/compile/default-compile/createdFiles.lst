@@ -3,14 +3,7 @@ es\etg\dam\tfg\programa\modelo\Fabricante.class
 es\etg\dam\tfg\programa\modelo\Consola.class
 es\etg\dam\tfg\programa\modelo\Ubicacion.class
 es\etg\dam\tfg\programa\JavaFXApp.class
-es\etg\dam\tfg\programa\repositorio\VideojuegoRepositorio.class
-es\etg\dam\tfg\programa\repositorio\FabricanteRepositorio.class
-es\etg\dam\tfg\programa\repositorio\UbicacionRepositorio.class
-es\etg\dam\tfg\programa\servicio\UsuarioServicio.class
 es\etg\dam\tfg\programa\repositorio\UsuarioVideojuegoRepositorio.class
-es\etg\dam\tfg\programa\controlador\RegistroControlador.class
-es\etg\dam\tfg\programa\controlador\LogInControlador.class
-es\etg\dam\tfg\programa\repositorio\EstadoRepositorio.class
 es\etg\dam\tfg\programa\modelo\ids\UsuarioVideojuegoID.class
 es\etg\dam\tfg\programa\modelo\Estado.class
 es\etg\dam\tfg\programa\repositorio\GeneroRepositorio.class
@@ -18,8 +11,6 @@ es\etg\dam\tfg\programa\modelo\Genero.class
 es\etg\dam\tfg\programa\servicio\UsuarioVideojuegoServicio.class
 es\etg\dam\tfg\programa\modelo\UsuarioVideojuego.class
 es\etg\dam\tfg\programa\modelo\Videojuego.class
-es\etg\dam\tfg\programa\repositorio\UsuarioRepositorio.class
 es\etg\dam\tfg\programa\modelo\Compania.class
-es\etg\dam\tfg\programa\repositorio\CompaniaRepositorio.class
 es\etg\dam\tfg\programa\App.class
 es\etg\dam\tfg\programa\modelo\Usuario.class

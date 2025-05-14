@@ -1,5 +1,7 @@
 package es.etg.dam.tfg.programa.controlador;
 
+import org.springframework.stereotype.Component;
+
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.utils.ImagenUtils;
 import es.etg.dam.tfg.programa.utils.Mensajes;
@@ -8,7 +10,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import lombok.RequiredArgsConstructor;
 
+@Component
+@RequiredArgsConstructor
 public class FichaJuegoControlador {
 
     @FXML private ImageView imgPortada;

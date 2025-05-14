@@ -29,7 +29,7 @@
                 <items>
                     <MenuItem fx:id="menuVerJuegos" text="Ver juegos" />
                     <MenuItem fx:id="menuFiltrarJuegos" text="Filtrar juegos" />
-                    <MenuItem fx:id="menuExportarBiblioteca" text="Exportar biblioteca" />
+                    <MenuItem fx:id="menuExportarBiblioteca" text="Exportar biblioteca" onAction="#exportarBibliotecaAPDF" />
                 </items>
             </Menu>
         </menus>
@@ -71,7 +71,6 @@
         <Label fx:id="lblPagina" text="Página 1"/>
         <Button fx:id="btnSiguiente" text="Siguiente" onAction="#paginaSiguiente"/>
     </HBox>
-
 
     <!-- Botón para abrir el formulario de agregar juego -->
     <HBox alignment="CENTER_RIGHT">

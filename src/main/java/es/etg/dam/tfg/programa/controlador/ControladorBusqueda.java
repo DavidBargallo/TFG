@@ -15,13 +15,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
-@Controller
+@Component
 @RequiredArgsConstructor
 public class ControladorBusqueda {
 

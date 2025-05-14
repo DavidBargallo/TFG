@@ -15,12 +15,20 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -288,16 +296,104 @@ public class BibliotecaControlador {
     }
 
     private void mostrarDetallesJuego(Videojuego juego) {
-        String detalles = "Nombre: " + juego.getNombre() + "\n" +
-                "Fecha de Lanzamiento: " + juego.getFechaLanzamiento() + "\n" +
-                "Portada URL: " + juego.getPortadaUrl() + "\n" +
-                "Consolas: " + obtenerNombres(juego.getConsolas()) + "\n" +
-                "Géneros: " + obtenerNombres(juego.getGeneros());
+    try {
+        URL url = getClass().getResource("/vista/pantalla_ficha_juego.fxml");
+        if (url == null) {
+            mostrarAlerta("No se pudo encontrar el recurso FXML: /vista/pantalla_ficha_juego.fxml");
+            return;
+        }
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Detalles del Juego");
-        alert.setHeaderText(null);
-        alert.setContentText(detalles);
-        alert.showAndWait();
+        FXMLLoader loader = new FXMLLoader(url);
+        loader.setControllerFactory(applicationContext::getBean); 
+
+        Parent root = loader.load();
+        FichaJuegoControlador controlador = loader.getController();
+
+        controlador.inicializarDatos(juego);
+
+        Stage stage = new Stage();
+        stage.setTitle("Ficha del Juego: " + juego.getNombre());
+        stage.setScene(new Scene(root));
+        stage.show();
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        mostrarAlerta("Error al abrir la ventana de detalles del juego.");
     }
+}
+public void exportarBibliotecaAPDF() {
+    if (!Sesion.haySesionActiva()) {
+        mostrarAlerta("No se ha iniciado sesión.");
+        return;
+    }
+
+    List<Videojuego> juegosUsuario = cargarJuegosUsuario();
+
+    if (juegosUsuario.isEmpty()) {
+        mostrarAlerta("La biblioteca está vacía.");
+        return;
+    }
+
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Guardar Biblioteca como PDF");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf"));
+    File archivoGuardar = fileChooser.showSaveDialog(contenedorResultados.getScene().getWindow());
+
+    if (archivoGuardar != null) {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+            float yPosition = page.getMediaBox().getHeight() - 50;
+            float margin = 50;
+            float lineHeight = 15;
+
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(margin, yPosition);
+            contentStream.showText("Biblioteca de Juegos de " + Sesion.getUsuarioActual().getNombreUsuario());
+            contentStream.newLineAtOffset(0, -lineHeight * 1.5f);
+            contentStream.setFont(PDType1Font.HELVETICA, 10);
+            contentStream.endText();
+            yPosition -= lineHeight * 2;
+
+            for (Videojuego juego : juegosUsuario) {
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 11);
+                contentStream.showText("Nombre: " + juego.getNombre());
+                contentStream.newLineAtOffset(0, -lineHeight);
+                contentStream.setFont(PDType1Font.HELVETICA, 10);
+                contentStream.showText("Consolas: " + obtenerNombres(juego.getConsolas()));
+                contentStream.newLineAtOffset(0, -lineHeight);
+                contentStream.showText("Géneros: " + obtenerNombres(juego.getGeneros()));
+                contentStream.newLineAtOffset(0, -lineHeight);
+                contentStream.showText("Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
+                contentStream.newLineAtOffset(0, -lineHeight);
+                contentStream.showText("Formato: " + (juego.isEsFisico() ? "Físico" : "Digital"));
+                contentStream.endText();
+
+                yPosition -= lineHeight * 5;
+
+                if (yPosition <= margin) {
+                    contentStream.close();
+                    page = new PDPage(PDRectangle.A4);
+                    document.addPage(page);
+                    contentStream = new PDPageContentStream(document, page);
+                    yPosition = page.getMediaBox().getHeight() - margin;
+                }
+            }
+
+            contentStream.close();
+            document.save(archivoGuardar);
+            mostrarAlerta("Biblioteca exportada a PDF exitosamente.");
+
+        } catch (IOException e) {
+            mostrarAlerta("Error al exportar la biblioteca a PDF.");
+            e.printStackTrace();
+        }
+    }
+}
 }
