@@ -53,6 +53,8 @@ public class BibliotecaControlador {
     private Button btnAnterior, btnSiguiente;
     @FXML
     private Label lblPagina;
+    @FXML
+    private Menu menuCuenta;
 
     @FXML
     public void initialize() {
@@ -60,8 +62,11 @@ public class BibliotecaControlador {
     }
 
     public void inicializarBiblioteca() {
-        if (Sesion.getUsuarioActual() == null) {
-            mostrarAlerta("No se ha iniciado sesión.");
+
+        if (Sesion.haySesionActiva()) {
+            menuCuenta.setText(Sesion.getUsuarioActual().getNombreUsuario());
+        } else{
+             mostrarAlerta("No se ha iniciado sesión.");
             return;
         }
 

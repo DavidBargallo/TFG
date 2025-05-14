@@ -15,7 +15,7 @@
 
     <MenuBar>
         <menus>
-            <Menu text="Volver">
+            <Menu fx:id="menuCuenta" text="Cuenta">
                 <items>
                     <MenuItem fx:id="menuVolverBiblioteca" text="Volver a Biblioteca" onAction="#volverABiblioteca"/>
                 </items>

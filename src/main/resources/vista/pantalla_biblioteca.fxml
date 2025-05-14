@@ -11,7 +11,7 @@
     <!-- MenuBar -->
     <MenuBar fx:id="menuBar">
         <menus>
-            <Menu text="Cuenta">
+            <Menu fx:id="menuCuenta" text="Cuenta">
                 <items>
                     <MenuItem text="Estadísticas" onAction="#abrirEstadisticas" />
                     <MenuItem fx:id="menuCambiarContrasena" text="Cambiar contraseña" />

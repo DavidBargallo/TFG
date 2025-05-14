@@ -1,0 +1,43 @@
+package es.etg.dam.tfg.programa.controlador;
+
+import es.etg.dam.tfg.programa.modelo.Videojuego;
+import es.etg.dam.tfg.programa.utils.ImagenUtils;
+import es.etg.dam.tfg.programa.utils.Mensajes;
+import es.etg.dam.tfg.programa.utils.TextoUtils;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
+
+public class FichaJuegoControlador {
+
+    @FXML private ImageView imgPortada;
+    @FXML private Label lblNombre;
+    @FXML private Label lblFecha;
+    @FXML private Label lblEmpresa;
+    @FXML private Label lblGeneros;
+    @FXML private Label lblConsolas;
+
+    private Stage stage;
+
+    public void inicializarDatos(Videojuego juego) {
+        lblNombre.setText(juego.getNombre());
+        lblFecha.setText("Fecha: " + juego.getFechaLanzamiento());
+        lblEmpresa.setText("Empresa: " + 
+            (juego.getCompania() != null ? juego.getCompania().getNombre() : "N/A"));
+        lblGeneros.setText("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
+        lblConsolas.setText("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
+        ImagenUtils.cargarImagen(imgPortada, juego.getPortadaUrl(), Mensajes.PLACEHOLDER_IMAGEN);
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    @FXML
+    private void cerrarVentana() {
+        if (stage != null) {
+            stage.close();
+        }
+    }
+}
