@@ -2,55 +2,43 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.Consola;
+import es.etg.dam.tfg.programa.modelo.Genero;
 import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.servicio.ConsolaServicio;
 import es.etg.dam.tfg.programa.servicio.GeneroServicio;
 import es.etg.dam.tfg.programa.servicio.UsuarioVideojuegoServicio;
-import es.etg.dam.tfg.programa.utils.Sesion;
+import es.etg.dam.tfg.programa.utils.*;
+
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class BibliotecaControlador {
 
     private final ConsolaServicio consolaServicio;
     private final GeneroServicio generoServicio;
     private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final ApplicationContext applicationContext;
-    private static final int JUEGOS_POR_PAGINA = 10;
-    private int paginaActual = 0;
-    private List<Videojuego> juegosFiltrados = new ArrayList<>();
+
+    private Paginador<Videojuego> paginador;
 
     @FXML
     private VBox contenedorResultados;
     @FXML
-    private ComboBox<Consola> comboConsola;
+    private ComboBox<String> comboConsola;
     @FXML
     private ComboBox<String> comboGenero;
     @FXML
@@ -66,15 +54,20 @@ public class BibliotecaControlador {
 
     @FXML
     public void initialize() {
-
+        if (Sesion.haySesionActiva()) {
+            menuCuenta.setText(Sesion.getUsuarioActual().getNombreUsuario());
+            inicializarCombos();
+            mostrarJuegos();
+        } else {
+            FXMLSoporte.mostrarError(Mensajes.USUARIO_NO_LOGUEADO);
+        }
     }
 
     public void inicializarBiblioteca() {
 
         if (Sesion.haySesionActiva()) {
             menuCuenta.setText(Sesion.getUsuarioActual().getNombreUsuario());
-        } else{
-             mostrarAlerta("No se ha iniciado sesión.");
+        } else {
             return;
         }
 
@@ -82,41 +75,39 @@ public class BibliotecaControlador {
         mostrarJuegos();
     }
 
-    @FXML
     private void inicializarCombos() {
-        comboOrden.getItems().addAll(
-                "Nombre A-Z",
-                "Nombre Z-A",
-                "Fecha más reciente",
-                "Fecha más antigua");
+        comboOrden.getItems().clear();
+        comboOrden.getItems().addAll("Nombre A-Z", "Nombre Z-A", "Fecha más reciente", "Fecha más antigua");
         comboOrden.getSelectionModel().selectFirst();
 
-        comboConsola.getItems().addAll(consolaServicio.obtenerTodas());
+        List<String> nombresConsolas = consolaServicio.obtenerTodas().stream()
+                .map(Consola::getNombre)
+                .collect(Collectors.toList());
 
-        comboGenero.getItems().add("Todos");
-        generoServicio.obtenerTodos().stream()
-                .map(g -> g.getNombre())
-                .sorted()
-                .forEach(comboGenero.getItems()::add);
-        comboGenero.getSelectionModel().selectFirst();
+        List<String> nombresGeneros = generoServicio.obtenerTodos().stream()
+                .map(Genero::getNombre)
+                .collect(Collectors.toList());
+
+        ComboUtils.cargarComboConNombres(comboConsola, "Todas", nombresConsolas);
+        ComboUtils.cargarComboConNombres(comboGenero, "Todos", nombresGeneros);
     }
 
     @FXML
     private void aplicarFiltros() {
         String nombre = txtNombre.getText().trim().toLowerCase();
         String orden = comboOrden.getValue();
-        Consola consolaSeleccionada = comboConsola.getValue();
-        String generoSeleccionado = comboGenero.getValue();
 
-        List<Videojuego> filtrados = cargarJuegosUsuario().stream()
-                .filter(j -> nombre.isEmpty() || j.getNombre().toLowerCase().contains(nombre))
-                .filter(j -> consolaSeleccionada == null || j.getConsolas().contains(consolaSeleccionada))
-                .filter(j -> generoSeleccionado == null || generoSeleccionado.equals("Todos") ||
-                        j.getGeneros().stream().anyMatch(g -> g.getNombre().equalsIgnoreCase(generoSeleccionado)))
-                .sorted(obtenerComparador(orden))
-                .collect(Collectors.toList());
+        String genero = comboGenero.getValue();
+        String nombreConsola = comboConsola.getValue();
 
-        mostrarJuegos(filtrados);
+        genero = "Todos".equals(genero) ? null : genero;
+        nombreConsola = "Todas".equals(nombreConsola) ? null : nombreConsola;
+
+        List<Videojuego> juegosFiltrados = FiltroVideojuego.filtrarYOrdenar(
+                cargarJuegosUsuario(), nombre, nombreConsola, genero, orden);
+
+        paginador = new Paginador<>(juegosFiltrados, 10);
+        mostrarPaginaActual();
     }
 
     private List<Videojuego> cargarJuegosUsuario() {
@@ -128,62 +119,36 @@ public class BibliotecaControlador {
                 .obtenerVideojuegosPorUsuario(usuario.getId())
                 .stream()
                 .map(UsuarioVideojuego::getVideojuego)
-                .collect(Collectors.toList());
-    }
-
-    private Comparator<Videojuego> obtenerComparador(String orden) {
-        return switch (orden) {
-            case "Nombre A-Z" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER);
-            case "Nombre Z-A" -> Comparator.comparing(Videojuego::getNombre, String.CASE_INSENSITIVE_ORDER).reversed();
-            case "Fecha más reciente" -> Comparator.comparing(Videojuego::getFechaLanzamiento).reversed();
-            case "Fecha más antigua" -> Comparator.comparing(Videojuego::getFechaLanzamiento);
-            default -> Comparator.comparing(Videojuego::getNombre);
-        };
+                .toList();
     }
 
     private void mostrarJuegos() {
-        juegosFiltrados = cargarJuegosUsuario();
-        paginaActual = 0;
+        List<Videojuego> juegos = cargarJuegosUsuario();
+        paginador = new Paginador<>(juegos, 10);
         mostrarPaginaActual();
     }
 
     private void mostrarPaginaActual() {
-        int start = paginaActual * JUEGOS_POR_PAGINA;
-        int end = Math.min(start + JUEGOS_POR_PAGINA, juegosFiltrados.size());
-        List<Videojuego> pagina = juegosFiltrados.subList(start, end);
-
         contenedorResultados.getChildren().clear();
-        for (Videojuego juego : pagina) {
+        for (Videojuego juego : paginador.getPaginaActual()) {
             contenedorResultados.getChildren().add(crearFichaJuego(juego));
         }
 
-        lblPagina.setText(
-                "Página " + (paginaActual + 1) + " de " + ((juegosFiltrados.size() - 1) / JUEGOS_POR_PAGINA + 1));
-        btnAnterior.setDisable(paginaActual == 0);
-        btnSiguiente.setDisable(end >= juegosFiltrados.size());
+        lblPagina.setText("Página " + paginador.getPaginaActualNumero() + " de " + paginador.getTotalPaginas());
+        btnAnterior.setDisable(!paginador.puedeIrAnterior());
+        btnSiguiente.setDisable(!paginador.puedeIrSiguiente());
     }
 
     @FXML
     private void paginaAnterior() {
-        if (paginaActual > 0) {
-            paginaActual--;
-            mostrarPaginaActual();
-        }
+        paginador.irAnterior();
+        mostrarPaginaActual();
     }
 
     @FXML
     private void paginaSiguiente() {
-        if ((paginaActual + 1) * JUEGOS_POR_PAGINA < juegosFiltrados.size()) {
-            paginaActual++;
-            mostrarPaginaActual();
-        }
-    }
-
-    private void mostrarJuegos(List<Videojuego> juegos) {
-        contenedorResultados.getChildren().clear();
-        for (Videojuego juego : juegos) {
-            contenedorResultados.getChildren().add(crearFichaJuego(juego));
-        }
+        paginador.irSiguiente();
+        mostrarPaginaActual();
     }
 
     private VBox crearFichaJuego(Videojuego juego) {
@@ -194,19 +159,19 @@ public class BibliotecaControlador {
         portada.setFitWidth(100);
         portada.setFitHeight(100);
         portada.setPreserveRatio(true);
-        cargarImagen(portada, juego.getPortadaUrl());
+        ImagenUtils.cargarImagen(portada, juego.getPortadaUrl());
 
         Label lblNombre = new Label("Nombre: " + juego.getNombre());
-        Label lblConsolas = new Label("Consolas: " + obtenerNombres(juego.getConsolas()));
-        Label lblGeneros = new Label("Géneros: " + obtenerNombres(juego.getGeneros()));
-        Label lblEmpresa = new Label(
-                "Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
+        Label lblConsolas = new Label("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
+        Label lblGeneros = new Label("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
+        Label lblEmpresa = new Label("Empresa: " +
+                Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
 
         Button btnEliminar = new Button("Eliminar");
         btnEliminar.setOnAction(e -> eliminarJuego(juego));
 
         ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa, btnEliminar);
-        ficha.setOnMouseClicked(event -> mostrarDetallesJuego(juego));
+        ficha.setOnMouseClicked(event -> abrirFichaJuego(juego));
         return ficha;
     }
 
@@ -215,185 +180,65 @@ public class BibliotecaControlador {
         if (usuario == null)
             return;
 
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION,
-                "¿Estás seguro de que quieres eliminar este juego?", ButtonType.YES, ButtonType.NO);
-        confirmacion.showAndWait().ifPresent(respuesta -> {
-            if (respuesta == ButtonType.YES) {
-                usuarioVideojuegoServicio.eliminarRelacionUsuarioVideojuego(usuario.getId(), juego.getId());
-                mostrarJuegos();
-            }
-        });
-    }
-
-    private void cargarImagen(ImageView imageView, String url) {
-        try {
-            imageView.setImage(new Image(url, true));
-        } catch (Exception e) {
-            imageView.setImage(new Image(getClass().getResourceAsStream("/placeholder.png")));
-        }
-    }
-
-    private String obtenerNombres(Set<?> entidades) {
-        return entidades.stream()
-                .map(this::obtenerNombreDeEntidad)
-                .collect(Collectors.joining(", "));
-    }
-
-    private String obtenerNombreDeEntidad(Object entidad) {
-        try {
-            return (String) entidad.getClass().getMethod("getNombre").invoke(entidad);
-        } catch (Exception e) {
-            return "";
+        if (AlertaUtils.confirmar(Mensajes.CONFIRMAR_ELIMINACION)) {
+            usuarioVideojuegoServicio.eliminarRelacionUsuarioVideojuego(usuario.getId(), juego.getId());
+            mostrarJuegos();
         }
     }
 
     @FXML
     private void abrirFormularioAgregarJuego() {
-        abrirPantalla("/vista/pantalla_busqueda.fxml", "Agregar juegos");
+        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_busqueda.fxml", "Agregar juegos",
+                (Stage) contenedorResultados.getScene().getWindow());
     }
 
     @FXML
     private void abrirEstadisticas() {
-        abrirPantalla("/vista/pantalla_estadisticas.fxml", "Estadísticas");
+        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_estadisticas.fxml", "Estadísticas",
+                (Stage) contenedorResultados.getScene().getWindow());
+    }
+
+    private void abrirFichaJuego(Videojuego juego) {
+        FXMLSoporte.abrirEInicializar(
+                applicationContext,
+                "/vista/pantalla_ficha_juego.fxml",
+                "Ficha del Juego: " + juego.getNombre(),
+                (Stage) contenedorResultados.getScene().getWindow(),
+                (FichaJuegoControlador controlador) -> controlador.inicializarDatos(juego));
     }
 
     @FXML
     private void cerrarSesion() {
         Sesion.cerrarSesion();
-        abrirPantalla("/vista/pantalla_inicio.fxml", "Iniciar sesión");
+        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_inicio.fxml", "Iniciar sesión",
+                (Stage) contenedorResultados.getScene().getWindow());
     }
 
-    private void abrirPantalla(String ruta, String titulo) {
-        try {
-            URL url = getClass().getResource(ruta);
-            if (url == null) {
-                mostrarAlerta("No se pudo encontrar el recurso FXML: " + ruta);
-                return;
-            }
-
-            FXMLLoader loader = new FXMLLoader(url);
-            loader.setControllerFactory(applicationContext::getBean);
-            Parent root = loader.load();
-
-            Stage stage = (Stage) contenedorResultados.getScene().getWindow();
-
-            stage.setOnCloseRequest(e -> Sesion.cerrarSesion());
-
-            stage.setScene(new Scene(root));
-            stage.setTitle(titulo);
-            stage.show();
-
-        } catch (IOException e) {
-            mostrarAlerta("Error al abrir la pantalla.");
-        }
-    }
-
-    private void mostrarAlerta(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    private void mostrarDetallesJuego(Videojuego juego) {
-    try {
-        URL url = getClass().getResource("/vista/pantalla_ficha_juego.fxml");
-        if (url == null) {
-            mostrarAlerta("No se pudo encontrar el recurso FXML: /vista/pantalla_ficha_juego.fxml");
+    @FXML
+    public void exportarBibliotecaAPDF() {
+        if (!Sesion.haySesionActiva()) {
+            FXMLSoporte.mostrarError(Mensajes.USUARIO_NO_LOGUEADO);
             return;
         }
 
-        FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(applicationContext::getBean); 
+        List<Videojuego> juegosUsuario = cargarJuegosUsuario();
+        if (juegosUsuario.isEmpty()) {
+            FXMLSoporte.mostrarError("La biblioteca está vacía.");
+            return;
+        }
 
-        Parent root = loader.load();
-        FichaJuegoControlador controlador = loader.getController();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Biblioteca como PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf"));
+        File archivoGuardar = fileChooser.showSaveDialog(contenedorResultados.getScene().getWindow());
 
-        controlador.inicializarDatos(juego);
-
-        Stage stage = new Stage();
-        stage.setTitle("Ficha del Juego: " + juego.getNombre());
-        stage.setScene(new Scene(root));
-        stage.show();
-
-    } catch (IOException e) {
-        e.printStackTrace();
-        mostrarAlerta("Error al abrir la ventana de detalles del juego.");
-    }
-}
-public void exportarBibliotecaAPDF() {
-    if (!Sesion.haySesionActiva()) {
-        mostrarAlerta("No se ha iniciado sesión.");
-        return;
-    }
-
-    List<Videojuego> juegosUsuario = cargarJuegosUsuario();
-
-    if (juegosUsuario.isEmpty()) {
-        mostrarAlerta("La biblioteca está vacía.");
-        return;
-    }
-
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Guardar Biblioteca como PDF");
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf"));
-    File archivoGuardar = fileChooser.showSaveDialog(contenedorResultados.getScene().getWindow());
-
-    if (archivoGuardar != null) {
-        try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
-
-            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-
-            float yPosition = page.getMediaBox().getHeight() - 50;
-            float margin = 50;
-            float lineHeight = 15;
-
-            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
-            contentStream.beginText();
-            contentStream.newLineAtOffset(margin, yPosition);
-            contentStream.showText("Biblioteca de Juegos de " + Sesion.getUsuarioActual().getNombreUsuario());
-            contentStream.newLineAtOffset(0, -lineHeight * 1.5f);
-            contentStream.setFont(PDType1Font.HELVETICA, 10);
-            contentStream.endText();
-            yPosition -= lineHeight * 2;
-
-            for (Videojuego juego : juegosUsuario) {
-                contentStream.beginText();
-                contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 11);
-                contentStream.showText("Nombre: " + juego.getNombre());
-                contentStream.newLineAtOffset(0, -lineHeight);
-                contentStream.setFont(PDType1Font.HELVETICA, 10);
-                contentStream.showText("Consolas: " + obtenerNombres(juego.getConsolas()));
-                contentStream.newLineAtOffset(0, -lineHeight);
-                contentStream.showText("Géneros: " + obtenerNombres(juego.getGeneros()));
-                contentStream.newLineAtOffset(0, -lineHeight);
-                contentStream.showText("Empresa: " + Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
-                contentStream.newLineAtOffset(0, -lineHeight);
-                contentStream.showText("Formato: " + (juego.isEsFisico() ? "Físico" : "Digital"));
-                contentStream.endText();
-
-                yPosition -= lineHeight * 5;
-
-                if (yPosition <= margin) {
-                    contentStream.close();
-                    page = new PDPage(PDRectangle.A4);
-                    document.addPage(page);
-                    contentStream = new PDPageContentStream(document, page);
-                    yPosition = page.getMediaBox().getHeight() - margin;
-                }
+        if (archivoGuardar != null) {
+            try {
+                PDFUtils.exportarBiblioteca(juegosUsuario, Sesion.getUsuarioActual().getNombreUsuario(),
+                        archivoGuardar);
+            } catch (Exception e) {
+                FXMLSoporte.mostrarError("Error al exportar el PDF.");
             }
-
-            contentStream.close();
-            document.save(archivoGuardar);
-            mostrarAlerta("Biblioteca exportada a PDF exitosamente.");
-
-        } catch (IOException e) {
-            mostrarAlerta("Error al exportar la biblioteca a PDF.");
-            e.printStackTrace();
         }
     }
-}
 }

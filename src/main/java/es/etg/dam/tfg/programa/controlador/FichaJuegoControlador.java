@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.utils.ImagenUtils;
-import es.etg.dam.tfg.programa.utils.Mensajes;
 import es.etg.dam.tfg.programa.utils.TextoUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -32,7 +31,7 @@ public class FichaJuegoControlador {
             (juego.getCompania() != null ? juego.getCompania().getNombre() : "N/A"));
         lblGeneros.setText("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
         lblConsolas.setText("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
-        ImagenUtils.cargarImagen(imgPortada, juego.getPortadaUrl(), Mensajes.PLACEHOLDER_IMAGEN);
+        ImagenUtils.cargarImagen(imgPortada, juego.getPortadaUrl());
     }
 
     public void setStage(Stage stage) {
