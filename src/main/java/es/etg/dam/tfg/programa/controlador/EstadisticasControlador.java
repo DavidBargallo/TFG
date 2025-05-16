@@ -2,11 +2,10 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.servicio.UsuarioVideojuegoServicio;
+import es.etg.dam.tfg.programa.utils.FXMLSoporte;
+import es.etg.dam.tfg.programa.utils.RutaFXML;
 import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
@@ -17,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,8 +41,7 @@ public class EstadisticasControlador {
     @FXML
     public void initialize() {
         var usuario = Sesion.getUsuarioActual();
-        if (usuario == null)
-            return;
+        if (usuario == null) return;
 
         List<UsuarioVideojuego> juegos = usuarioVideojuegoServicio.obtenerVideojuegosPorUsuario(usuario.getId());
 
@@ -80,12 +76,12 @@ public class EstadisticasControlador {
 
         XYChart.Series<String, Number> serieConsolas = new XYChart.Series<>();
         serieConsolas.setName("Consolas");
-
-        consolas.forEach((nombre, cantidad) -> serieConsolas.getData().add(new XYChart.Data<>(nombre, cantidad)));
+        consolas.forEach((nombre, cantidad) ->
+                serieConsolas.getData().add(new XYChart.Data<>(nombre, cantidad))
+        );
 
         graficoConsolas.getData().clear();
         graficoConsolas.getData().add(serieConsolas);
-
     }
 
     private String obtenerMasFrecuente(Map<String, Long> mapa) {
@@ -97,21 +93,15 @@ public class EstadisticasControlador {
 
     @FXML
     private void volverABiblioteca() {
-        try {
-            URL url = getClass().getResource("/vista/pantalla_biblioteca.fxml");
-            FXMLLoader loader = new FXMLLoader(url);
-            loader.setControllerFactory(applicationContext::getBean);
-            Parent root = loader.load();
+        Stage stageActual = (Stage) lblGeneroFavorito.getScene().getWindow();
 
-            BibliotecaControlador controlador = loader.getController();
-            controlador.inicializarBiblioteca();
-
-            Stage stage = (Stage) lblGeneroFavorito.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Biblioteca");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FXMLSoporte.abrirEInicializar(
+                applicationContext,
+                RutaFXML.BIBLIOTECA,
+                "Biblioteca",
+                stageActual,
+                (BibliotecaControlador controlador) -> controlador.inicializarBiblioteca()
+        );
     }
 }
+

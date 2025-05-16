@@ -2,12 +2,11 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.servicio.UsuarioServicio;
+import es.etg.dam.tfg.programa.utils.FXMLSoporte;
+import es.etg.dam.tfg.programa.utils.RutaFXML;
 import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
@@ -16,19 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.io.IOException;
-import java.net.URL;
+
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class LogInControlador {
-
-    //Nombre usuario: David
-    //Password: Contras3ña!
-
-    //Nombre usuario: Test
-    //Password: Contras4ña!
 
     private static final Logger logger = LoggerFactory.getLogger(LogInControlador.class);
 
@@ -46,18 +38,12 @@ public class LogInControlador {
     private final ApplicationContext applicationContext;
 
     @FXML
-    public void initialize() {
-
-    }
-
-    @FXML
     public void iniciarSesion(ActionEvent event) {
         String nombreUsuario = txtUsuario.getText().trim();
         String contrasena = txtContrasena.getText().trim();
 
         if (nombreUsuario.isBlank() || contrasena.isBlank()) {
-            lblError.setText("Debes introducir usuario y contraseña.");
-            lblError.setVisible(true);
+            mostrarError("Debes introducir usuario y contraseña.");
             return;
         }
 
@@ -67,67 +53,41 @@ public class LogInControlador {
             if (usuarioOptional.isPresent()) {
                 Usuario usuario = usuarioOptional.get();
                 if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
-                    lblError.setText("Inicio de sesión exitoso!");
-                    lblError.setVisible(true);
                     Sesion.cerrarSesion();
                     Sesion.iniciarSesion(usuario);
-                    abrirPantallaPrincipal(usuario, event);
+                    abrirPantallaPrincipal(event);
                 } else {
-                    lblError.setText("Usuario o contraseña incorrectos.");
-                    lblError.setVisible(true);
+                    mostrarError("Usuario o contraseña incorrectos.");
                 }
             } else {
-                lblError.setText("Usuario o contraseña incorrectos.");
-                lblError.setVisible(true);
+                mostrarError("Usuario o contraseña incorrectos.");
             }
         } catch (Exception e) {
             logger.error("Error al iniciar sesión", e);
-            lblError.setText("Error al iniciar sesión: " + e.getMessage());
-            lblError.setVisible(true);
+            mostrarError("Error al iniciar sesión: " + e.getMessage());
         }
     }
 
     @FXML
     public void abrirRegistro(ActionEvent event) {
-        try {
-            URL registroURL = getClass().getResource("/vista/pantalla_registro.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(registroURL);
-            fxmlLoader.setControllerFactory(applicationContext::getBean); 
-            Parent root = fxmlLoader.load();
-            Stage stage = (Stage) txtUsuario.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Registro de Usuario");
-            stage.show();
-        } catch (IOException e) {
-            logger.error("Error al abrir la pantalla de registro", e);
-            lblError.setText("No se pudo abrir la pantalla de registro.");
-        }
+        Stage stage = (Stage) txtUsuario.getScene().getWindow();
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.REGISTRO, "Registro de Usuario", stage);
     }
 
-    private void abrirPantallaPrincipal(Usuario usuario, ActionEvent event) {
-        try {
-            URL bibliotecaURL = getClass().getResource("/vista/pantalla_biblioteca.fxml");
-            FXMLLoader loader = new FXMLLoader(bibliotecaURL);
-            loader.setControllerFactory(applicationContext::getBean);
-            Parent root = loader.load();
-    
-            
-            BibliotecaControlador controlador = loader.getController();
-            controlador.inicializarBiblioteca();
-    
-            
-            Stage oldStage = (Stage) ((Control) event.getSource()).getScene().getWindow();
-            oldStage.close();
-    
-            Stage newStage = new Stage();
-            newStage.setScene(new Scene(root));
-            newStage.setTitle("Mi Biblioteca de Juegos");
-            newStage.show();
-    
-        } catch (IOException e) {
-            logger.error("Error al cargar la pantalla principal", e);
-            lblError.setText("Error al cargar la pantalla principal: " + e.getMessage());
-            lblError.setVisible(true);
-        }
-    }  
+    private void abrirPantallaPrincipal(ActionEvent event) {
+        Stage stageActual = (Stage) ((Control) event.getSource()).getScene().getWindow();
+
+        FXMLSoporte.abrirEInicializar(
+                applicationContext,
+                RutaFXML.BIBLIOTECA,
+                "Mi Biblioteca de Juegos",
+                stageActual,
+                (BibliotecaControlador controlador) -> controlador.inicializarBiblioteca()
+        );
+    }
+
+    private void mostrarError(String mensaje) {
+        lblError.setText(mensaje);
+        lblError.setVisible(true);
+    }
 }

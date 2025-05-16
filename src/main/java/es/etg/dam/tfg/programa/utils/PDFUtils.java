@@ -1,7 +1,6 @@
 package es.etg.dam.tfg.programa.utils;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
-import es.etg.dam.tfg.programa.utils.TextoUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;

@@ -13,54 +13,50 @@ import java.util.function.Consumer;
 
 public class FXMLSoporte {
 
-    public static void abrirVentana(ApplicationContext context, String rutaFXML, String titulo, Stage owner) {
-    try {
-        URL url = FXMLSoporte.class.getResource(rutaFXML);
-        if (url == null) {
-            mostrarError("No se pudo encontrar el archivo FXML: " + rutaFXML);
-            return;
+    public static void abrirVentana(ApplicationContext context, String rutaFXML, String titulo, Stage stage) {
+        try {
+            URL url = FXMLSoporte.class.getResource(rutaFXML);
+            if (url == null) {
+                mostrarError("No se pudo encontrar el archivo FXML: " + rutaFXML);
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(url);
+            loader.setControllerFactory(context::getBean);
+            Parent root = loader.load();
+
+            stage.setTitle(titulo);
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            mostrarError("No se pudo abrir la ventana: " + e.getMessage());
         }
+    }
 
-        FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(context::getBean);
-        Parent root = loader.load();
+    public static <T> void abrirEInicializar(ApplicationContext context, String rutaFXML, String titulo, Stage stage, Consumer<T> inicializador) {
+        try {
+            URL url = FXMLSoporte.class.getResource(rutaFXML);
+            if (url == null) {
+                mostrarError("No se pudo encontrar el archivo FXML: " + rutaFXML);
+                return;
+            }
 
-        Stage stage = new Stage();
-        stage.setTitle(titulo);
-        stage.setScene(new Scene(root));
-        stage.show();
+            FXMLLoader loader = new FXMLLoader(url);
+            loader.setControllerFactory(context::getBean);
+            Parent root = loader.load();
 
-        if (owner != null) {
-            owner.close();
+            T controller = loader.getController();
+            inicializador.accept(controller);
+
+            stage.setTitle(titulo);
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            mostrarError("No se pudo abrir la pantalla: " + e.getMessage());
         }
-
-    } catch (IOException e) {
-        mostrarError("No se pudo abrir la ventana: " + e.getMessage());
     }
-}
-
-
-    public static <T> void abrirEInicializar(ApplicationContext context, String rutaFXML, String titulo, Stage owner, Consumer<T> inicializador) {
-    try {
-        URL url = FXMLSoporte.class.getResource(rutaFXML);
-        FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(context::getBean);
-        Parent root = loader.load();
-
-        T controller = loader.getController();
-        inicializador.accept(controller);
-
-        Stage stage = new Stage();
-        stage.setTitle(titulo);
-        stage.setScene(new Scene(root));
-        if (owner != null) stage.initOwner(owner);
-        stage.show();
-
-    } catch (IOException e) {
-        mostrarError("No se pudo abrir la pantalla: " + e.getMessage());
-    }
-}
-
 
     public static void mostrarError(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -68,4 +64,3 @@ public class FXMLSoporte {
         alert.showAndWait();
     }
 }
-

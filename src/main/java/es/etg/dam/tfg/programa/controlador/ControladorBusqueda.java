@@ -6,8 +6,7 @@ import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
 import es.etg.dam.tfg.programa.repositorio.*;
 import es.etg.dam.tfg.programa.servicio.RawgApiServicio;
 import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
-import es.etg.dam.tfg.programa.utils.AlertaUtils;
-import es.etg.dam.tfg.programa.utils.Sesion;
+import es.etg.dam.tfg.programa.utils.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -15,8 +14,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -27,68 +27,85 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ControladorBusqueda {
 
+    private static final int JUEGOS_POR_PAGINA = 10;
+
     private final VideojuegoRepositorio videojuegoRepositorio;
     private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
     private final RawgApiServicio rawgApiServicio;
     private final GeneroRepositorio generoRepositorio;
     private final ConsolaRepositorio consolaRepositorio;
     private final VideojuegoServicio videojuegoServicio;
+    private final ApplicationContext applicationContext;
+
     private int paginaActualApi = 1;
-    private static final int JUEGOS_POR_PAGINA = 10;
-    private Map<String, Integer> mapaGeneros = new HashMap<>();
-    private Map<String, Integer> mapaConsolas = new HashMap<>();
+    private final Map<String, Integer> mapaGeneros = new HashMap<>();
+    private final Map<String, Integer> mapaConsolas = new HashMap<>();
 
     @FXML
     private ComboBox<String> comboConsolaApi;
     @FXML
     private TextField txtNombreApi;
     @FXML
-    private TextField txtPrecioMaxApi;
-    @FXML
     private ComboBox<String> comboOrdenApi;
     @FXML
     private VBox contenedorResultadosApi;
     @FXML
-    private Button btnBuscarApi;
-    @FXML
-    private Button btnAnteriorApi, btnSiguienteApi;
+    private Button btnBuscarApi, btnAnteriorApi, btnSiguienteApi;
     @FXML
     private Label lblPaginaApi;
     @FXML
     private ComboBox<String> comboGeneroApi;
+    @FXML
+    private MenuItem menuVolverBiblioteca;
 
     @FXML
     public void initialize() {
-        try {
-            comboConsolaApi.getItems().clear();
-            comboConsolaApi.getItems().add("Todas");
-            for (JsonNode plataforma : rawgApiServicio.consumirApi("https://api.rawg.io/api/platforms")
-                    .get("results")) {
-                String nombre = plataforma.get("name").asText();
-                int id = plataforma.get("id").asInt();
-                comboConsolaApi.getItems().add(nombre);
-                mapaConsolas.put(nombre, id);
-            }
-            comboConsolaApi.getSelectionModel().selectFirst();
-
-            comboGeneroApi.getItems().clear();
-            comboGeneroApi.getItems().add("Todos");
-            for (JsonNode genero : rawgApiServicio.consumirApi("https://api.rawg.io/api/genres").get("results")) {
-                String nombre = genero.get("name").asText();
-                int id = genero.get("id").asInt();
-                comboGeneroApi.getItems().add(nombre);
-                mapaGeneros.put(nombre, id);
-            }
-            comboGeneroApi.getSelectionModel().selectFirst();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            AlertaUtils.mostrarAlerta("Error al cargar géneros o plataformas desde la API.");
-        }
+        menuVolverBiblioteca.setOnAction(e -> volverABiblioteca());
+        cargarPlataformas();
+        cargarGeneros();
 
         comboOrdenApi.getItems().addAll("Fecha más reciente", "Fecha más antigua");
         comboOrdenApi.getSelectionModel().selectFirst();
 
         btnBuscarApi.setOnAction(this::buscarJuegos);
+    }
+
+    private void cargarPlataformas() {
+        try {
+            JsonNode plataformas = rawgApiServicio.consumirApi("https://api.rawg.io/api/platforms").get("results");
+            comboConsolaApi.getItems().clear();
+            comboConsolaApi.getItems().add("Todas");
+
+            plataformas.forEach(p -> {
+                String nombre = p.get("name").asText();
+                int id = p.get("id").asInt();
+                comboConsolaApi.getItems().add(nombre);
+                mapaConsolas.put(nombre, id);
+            });
+
+            comboConsolaApi.getSelectionModel().selectFirst();
+        } catch (Exception e) {
+            AlertaUtils.mostrarAlerta("Error al cargar plataformas.");
+        }
+    }
+
+    private void cargarGeneros() {
+        try {
+            JsonNode generos = rawgApiServicio.consumirApi("https://api.rawg.io/api/genres").get("results");
+            comboGeneroApi.getItems().clear();
+            comboGeneroApi.getItems().add("Todos");
+
+            generos.forEach(g -> {
+                String nombre = g.get("name").asText();
+                int id = g.get("id").asInt();
+                comboGeneroApi.getItems().add(nombre);
+                mapaGeneros.put(nombre, id);
+            });
+
+            comboGeneroApi.getSelectionModel().selectFirst();
+        } catch (Exception e) {
+            AlertaUtils.mostrarAlerta("Error al cargar géneros.");
+        }
     }
 
     private void buscarJuegos(ActionEvent event) {
@@ -113,21 +130,17 @@ public class ControladorBusqueda {
             contenedorResultadosApi.getChildren().clear();
 
             if (juegos != null && juegos.isArray() && juegos.size() > 0) {
-                for (JsonNode juego : juegos) {
-                    contenedorResultadosApi.getChildren().add(crearFichaJuego(juego));
-                }
+                juegos.forEach(j -> contenedorResultadosApi.getChildren().add(crearFichaJuego(j)));
             } else {
-                Label sinResultados = new Label("No se encontraron juegos con los filtros aplicados.");
-                contenedorResultadosApi.getChildren().add(sinResultados);
+                contenedorResultadosApi.getChildren()
+                        .add(new Label("No se encontraron juegos con los filtros aplicados."));
             }
 
             lblPaginaApi.setText("Página " + paginaActualApi);
             btnAnteriorApi.setDisable(paginaActualApi == 1);
-            boolean hayMasPaginas = respuesta.has("next") && !respuesta.get("next").isNull();
-            btnSiguienteApi.setDisable(!hayMasPaginas);
+            btnSiguienteApi.setDisable(!respuesta.has("next") || respuesta.get("next").isNull());
 
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
             AlertaUtils.mostrarAlerta("Error al cargar resultados: " + e.getMessage());
         }
     }
@@ -146,34 +159,34 @@ public class ControladorBusqueda {
         cargarPaginaApi();
     }
 
+    private void volverABiblioteca() {
+        Stage actual = (Stage) contenedorResultadosApi.getScene().getWindow();
+        FXMLSoporte.abrirEInicializar(
+                applicationContext,
+                RutaFXML.BIBLIOTECA,
+                "Biblioteca",
+                actual,
+                BibliotecaControlador::inicializarBiblioteca);
+    }
+
     private HBox crearFichaJuego(JsonNode juegoJson) {
         String nombreJuego = juegoJson.get("name").asText();
         String imagenUrl = juegoJson.hasNonNull("background_image")
                 ? juegoJson.get("background_image").asText()
                 : null;
+        LocalDate fecha = juegoJson.hasNonNull("released")
+                ? LocalDate.parse(juegoJson.get("released").asText())
+                : LocalDate.of(2000, 1, 1);
 
-        LocalDate fechaLanzamiento = LocalDate.parse(
-                juegoJson.hasNonNull("released") ? juegoJson.get("released").asText() : "2000-01-01");
-
-        Image imagen;
-        try {
-            imagen = (imagenUrl != null && !imagenUrl.isBlank())
-                    ? new Image(imagenUrl, 120, 80, true, true)
-                    : new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
-        } catch (Exception e) {
-            imagen = new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
-        }
-
+        Image imagen = crearImagen(imagenUrl);
         ImageView imageView = new ImageView(imagen);
-
         HBox hBox = new HBox(10);
         hBox.setStyle("-fx-border-color: #ccc; -fx-padding: 10;");
         hBox.getChildren().addAll(imageView, new Label(nombreJuego));
 
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario != null) {
-            Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombreJuego,
-                    fechaLanzamiento);
+            Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombreJuego, fecha);
             boolean yaEnBiblioteca = existente
                     .map(v -> usuarioVideojuegoRepositorio
                             .existsById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
@@ -181,7 +194,7 @@ public class ControladorBusqueda {
 
             if (!yaEnBiblioteca) {
                 Button btnAgregar = crearBotonAgregar(usuario, existente.orElse(null),
-                        new VideojuegoTemp(nombreJuego, fechaLanzamiento, imagenUrl, juegoJson));
+                        new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
                 hBox.getChildren().add(btnAgregar);
             }
         }
@@ -189,12 +202,22 @@ public class ControladorBusqueda {
         return hBox;
     }
 
-    private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp juegoNuevo) {
-        Button btnAgregar = new Button("Agregar a biblioteca");
-        btnAgregar.setOnAction(e -> {
+    private Image crearImagen(String url) {
+        try {
+            return (url != null && !url.isBlank())
+                    ? new Image(url, 120, 80, true, true)
+                    : new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
+        } catch (Exception e) {
+            return new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
+        }
+    }
+
+    private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
+        Button btn = new Button("Agregar a biblioteca");
+        btn.setOnAction(e -> {
             try {
-                Videojuego videojuego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(juegoNuevo);
-                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), videojuego.getId());
+                Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(temp);
+                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
 
                 if (usuarioVideojuegoRepositorio.existsById(id)) {
                     AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
@@ -204,20 +227,19 @@ public class ControladorBusqueda {
                 UsuarioVideojuego relacion = new UsuarioVideojuego();
                 relacion.setId(id);
                 relacion.setUsuario(usuario);
-                relacion.setVideojuego(videojuego);
+                relacion.setVideojuego(juego);
                 relacion.setEnWishlist(false);
 
                 usuarioVideojuegoRepositorio.save(relacion);
 
                 AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
-                btnAgregar.setVisible(false);
+                btn.setVisible(false);
+
             } catch (Exception ex) {
-                ex.printStackTrace();
                 AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
             }
         });
-
-        return btnAgregar;
+        return btn;
     }
 
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
@@ -234,13 +256,10 @@ public class ControladorBusqueda {
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();
         if (json.has("genres")) {
-            for (JsonNode generoNode : json.get("genres")) {
-                String nombre = generoNode.get("name").asText();
-                Genero genero = generoRepositorio.findByNombre(nombre).orElse(null);
-                if (genero != null) {
-                    generos.add(genero);
-                }
-            }
+            json.get("genres").forEach(node -> {
+                String nombre = node.get("name").asText();
+                generoRepositorio.findByNombre(nombre).ifPresent(generos::add);
+            });
         }
         return generos;
     }
@@ -248,50 +267,38 @@ public class ControladorBusqueda {
     private Consola seleccionarConsola(JsonNode json) {
         List<Consola> consolas = new ArrayList<>();
         if (json.has("platforms")) {
-            for (JsonNode plataformaNode : json.get("platforms")) {
-                String nombre = plataformaNode.get("platform").get("name").asText();
+            json.get("platforms").forEach(n -> {
+                String nombre = n.get("platform").get("name").asText();
                 consolaRepositorio.findByNombre(nombre).ifPresent(consolas::add);
-            }
+            });
         }
 
-        if (consolas.isEmpty()) {
-            throw new RuntimeException("No se encontraron consolas válidas en la base de datos.");
-        }
+        if (consolas.isEmpty())
+            throw new RuntimeException("No se encontraron consolas válidas.");
 
-        if (consolas.size() == 1) {
+        if (consolas.size() == 1)
             return consolas.get(0);
-        }
 
-        List<String> nombres = consolas.stream().map(Consola::getNombre).toList();
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(nombres.get(0), nombres);
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(consolas.get(0).getNombre(),
+                consolas.stream().map(Consola::getNombre).toList());
         dialog.setTitle("Seleccionar consola");
         dialog.setHeaderText("Elige una consola para agregar el juego:");
         dialog.setContentText("Consola:");
 
-        Optional<String> seleccion = dialog.showAndWait();
-        if (seleccion.isEmpty())
-            throw new RuntimeException("Selección cancelada.");
-
-        return consolas.stream()
-                .filter(c -> c.getNombre().equals(seleccion.get()))
-                .findFirst()
+        return dialog.showAndWait()
+                .flatMap(nombre -> consolas.stream().filter(c -> c.getNombre().equals(nombre)).findFirst())
                 .orElseThrow(() -> new RuntimeException("Consola no encontrada."));
     }
 
     private boolean preguntarFormatoJuego() {
         List<String> opciones = List.of("Físico", "Digital");
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(opciones.get(0), opciones);
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Físico", opciones);
         dialog.setTitle("Seleccionar formato");
         dialog.setHeaderText("¿Cómo tienes este juego?");
         dialog.setContentText("Formato:");
-
-        Optional<String> seleccion = dialog.showAndWait();
-        if (seleccion.isEmpty()) {
-            throw new RuntimeException("Selección cancelada.");
-        }
-
-        return "Físico".equals(seleccion.get());
+        return dialog.showAndWait().orElseThrow(() -> new RuntimeException("Selección cancelada.")).equals("Físico");
     }
 
-    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {}
+    private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {
+    }
 }

@@ -25,6 +25,8 @@ public class FichaJuegoControlador {
     private Stage stage;
 
     public void inicializarDatos(Videojuego juego) {
+        if (juego == null) return;
+
         lblNombre.setText(juego.getNombre());
         lblFecha.setText("Fecha: " + juego.getFechaLanzamiento());
         lblEmpresa.setText("Empresa: " + 
@@ -42,6 +44,10 @@ public class FichaJuegoControlador {
     private void cerrarVentana() {
         if (stage != null) {
             stage.close();
+        } else {
+            Stage current = (Stage) imgPortada.getScene().getWindow();
+            current.close();
         }
     }
 }
+
