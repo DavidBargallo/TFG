@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import es.etg.dam.tfg.programa.modelo.*;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
 import es.etg.dam.tfg.programa.repositorio.*;
+import es.etg.dam.tfg.programa.servicio.CompaniaServicio;
 import es.etg.dam.tfg.programa.servicio.RawgApiServicio;
+import es.etg.dam.tfg.programa.servicio.UbicacionServicio;
 import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
 import es.etg.dam.tfg.programa.utils.*;
 import javafx.event.ActionEvent;
@@ -35,6 +37,8 @@ public class ControladorBusqueda {
     private final GeneroRepositorio generoRepositorio;
     private final ConsolaRepositorio consolaRepositorio;
     private final VideojuegoServicio videojuegoServicio;
+    private final CompaniaServicio companiaServicio;
+    private final UbicacionServicio ubicacionServicio;
     private final ApplicationContext applicationContext;
 
     private int paginaActualApi = 1;
@@ -176,7 +180,7 @@ public class ControladorBusqueda {
                 : null;
         LocalDate fecha = juegoJson.hasNonNull("released")
                 ? LocalDate.parse(juegoJson.get("released").asText())
-                : LocalDate.of(2000, 1, 1);
+                : LocalDate.of(1900, 1, 1);
 
         Image imagen = crearImagen(imagenUrl);
         ImageView imageView = new ImageView(imagen);
@@ -243,15 +247,64 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
-        Videojuego v = new Videojuego();
-        v.setNombre(temp.nombre());
-        v.setFechaLanzamiento(temp.fecha());
-        v.setPortadaUrl(temp.imagenUrl());
-        v.setEsFisico(preguntarFormatoJuego());
-        v.setGeneros(obtenerGeneros(temp.json()));
-        v.setConsolas(Set.of(seleccionarConsola(temp.json())));
-        return videojuegoServicio.guardar(v);
+    Videojuego v = new Videojuego();
+    v.setNombre(temp.nombre());
+    v.setFechaLanzamiento(temp.fecha());
+    v.setPortadaUrl(temp.imagenUrl());
+    v.setEsFisico(preguntarFormatoJuego());
+
+    
+    v.setGeneros(obtenerGeneros(temp.json()));
+    v.setConsolas(Set.of(seleccionarConsola(temp.json())));
+
+    
+    if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
+        JsonNode dev = temp.json().get("developers").get(0); 
+        String nombre = dev.get("name").asText();
+        String pais = "Desconocido"; 
+        v.setCompania(companiaServicio.guardarSiNoExiste(nombre, pais, null, null));
     }
+
+    if (v.isEsFisico()) {
+        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
+        Ubicacion seleccionada = null;
+
+        if (!ubicaciones.isEmpty()) {
+            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
+            dialog.setTitle("Seleccionar ubicación");
+            dialog.setHeaderText("Elige una ubicación ya registrada:");
+            dialog.setContentText("Ubicación:");
+            Optional<Ubicacion> resultado = dialog.showAndWait();
+            if (resultado.isPresent()) {
+                seleccionada = resultado.get();
+            }
+        }
+
+        if (seleccionada == null) {
+            final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
+            FXMLSoporte.abrirVentanaSecundaria(
+                applicationContext,
+                RutaFXML.NUEVA_UBICACION,
+                "Nueva Ubicación",
+                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> nuevaUbicacion[0] = u)
+            );
+
+            while (nuevaUbicacion[0] == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            seleccionada = nuevaUbicacion[0];
+        }
+
+        v.setUbicacion(seleccionada);
+    }
+
+    return videojuegoServicio.guardar(v);
+}
+
 
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.etg.dam.tfg.programa.controlador.NuevaUbicacionControlador">
+    <children>
+        <VBox alignment="CENTER" spacing="10.0" layoutX="20.0" layoutY="20.0">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+            <Label text="Nueva Ubicación" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+            <TextField fx:id="txtLugar" promptText="Lugar"/>
+            <TextField fx:id="txtZona" promptText="Zona (opcional)"/>
+            <TextField fx:id="txtIndicaciones" promptText="Indicaciones (opcional)"/>
+            <Button text="Guardar" onAction="#guardarUbicacion"/>
+            <Label fx:id="lblError" textFill="red"/>
+        </VBox>
+    </children>
+</AnchorPane>

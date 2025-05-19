@@ -33,6 +33,7 @@ public class BibliotecaControlador {
     private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final ApplicationContext applicationContext;
 
+
     private Paginador<Videojuego> paginador;
 
     @FXML
@@ -198,13 +199,13 @@ public class BibliotecaControlador {
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
+    @FXML
     private void abrirFichaJuego(Videojuego juego) {
-        FXMLSoporte.abrirEInicializar(
+        FXMLSoporte.abrirVentanaSecundaria(
                 applicationContext,
-                "/vista/pantalla_ficha_juego.fxml",
-                "Ficha del Juego: " + juego.getNombre(),
-                (Stage) contenedorResultados.getScene().getWindow(),
-                (FichaJuegoControlador controlador) -> controlador.inicializarDatos(juego));
+                RutaFXML.FICHA_JUEGO,
+                juego.getNombre(),
+                (FichaJuegoControlador c) -> c.inicializarDatos(juego));
     }
 
     @FXML
