@@ -247,64 +247,99 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
-    Videojuego v = new Videojuego();
-    v.setNombre(temp.nombre());
-    v.setFechaLanzamiento(temp.fecha());
-    v.setPortadaUrl(temp.imagenUrl());
-    v.setEsFisico(preguntarFormatoJuego());
+        Videojuego v = new Videojuego();
+        v.setNombre(temp.nombre());
+        v.setFechaLanzamiento(temp.fecha());
+        v.setPortadaUrl(temp.imagenUrl());
+        v.setEsFisico(preguntarFormatoJuego());
 
-    
-    v.setGeneros(obtenerGeneros(temp.json()));
-    v.setConsolas(Set.of(seleccionarConsola(temp.json())));
+        v.setGeneros(obtenerGeneros(temp.json()));
+        v.setConsolas(Set.of(seleccionarConsola(temp.json())));
 
-    
-    if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
-        JsonNode dev = temp.json().get("developers").get(0); 
-        String nombre = dev.get("name").asText();
-        String pais = "Desconocido"; 
-        v.setCompania(companiaServicio.guardarSiNoExiste(nombre, pais, null, null));
-    }
+        try {
+            JsonNode juegoCompleto = rawgApiServicio
+                    .consumirApi("https://api.rawg.io/api/games/" + temp.json().get("id").asInt());
 
-    if (v.isEsFisico()) {
-        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
-        Ubicacion seleccionada = null;
-
-        if (!ubicaciones.isEmpty()) {
-            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-            dialog.setTitle("Seleccionar ubicación");
-            dialog.setHeaderText("Elige una ubicación ya registrada:");
-            dialog.setContentText("Ubicación:");
-            Optional<Ubicacion> resultado = dialog.showAndWait();
-            if (resultado.isPresent()) {
-                seleccionada = resultado.get();
-            }
-        }
-
-        if (seleccionada == null) {
-            final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-            FXMLSoporte.abrirVentanaSecundaria(
-                applicationContext,
-                RutaFXML.NUEVA_UBICACION,
-                "Nueva Ubicación",
-                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> nuevaUbicacion[0] = u)
-            );
-
-            while (nuevaUbicacion[0] == null) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
+            if (juegoCompleto.has("developers") && juegoCompleto.get("developers").isArray()) {
+                for (JsonNode dev : juegoCompleto.get("developers")) {
+                    if (dev.hasNonNull("name")) {
+                        String nombre = dev.get("name").asText();
+                        String pais = "Desconocido";
+                        Compania compania = companiaServicio.guardarSiNoExiste(nombre, pais, null, null);
+                        if (compania != null) {
+                            v.setCompania(compania);
+                            break;
+                        }
+                    }
                 }
             }
-            seleccionada = nuevaUbicacion[0];
+        } catch (Exception e) {
+            System.out.println("Error al obtener información detallada del juego: " + e.getMessage());
         }
 
-        v.setUbicacion(seleccionada);
+        if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
+            for (JsonNode dev : temp.json().get("developers")) {
+                if (dev.hasNonNull("name")) {
+                    String nombre = dev.get("name").asText();
+                    String pais = "Desconocido";
+                    Compania compania = companiaServicio.guardarSiNoExiste(nombre, pais, null, null);
+
+                    if (compania != null) {
+                        v.setCompania(compania);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (v.isEsFisico()) {
+            Ubicacion seleccionada = null;
+
+            while (seleccionada == null) {
+                List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
+
+                if (!ubicaciones.isEmpty()) {
+                    ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
+                    dialog.setTitle("Seleccionar ubicación");
+                    dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
+                    dialog.setContentText("Ubicación:");
+                    Optional<Ubicacion> resultado = dialog.showAndWait();
+                    if (resultado.isPresent()) {
+                        seleccionada = resultado.get();
+                        break;
+                    }
+                }
+
+                final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
+                FXMLSoporte.abrirVentanaSecundaria(
+                        applicationContext,
+                        RutaFXML.NUEVA_UBICACION,
+                        "Nueva Ubicación",
+                        (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> nuevaUbicacion[0] = u));
+
+                while (nuevaUbicacion[0] == null) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+
+                if (nuevaUbicacion[0] != null) {
+                    seleccionada = nuevaUbicacion[0];
+                }
+            }
+
+            if (seleccionada == null) {
+                AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
+                throw new RuntimeException("Ubicación no establecida para juego físico.");
+            }
+
+            v.setUbicacion(seleccionada);
+        }
+
+        return videojuegoServicio.guardar(v);
     }
-
-    return videojuegoServicio.guardar(v);
-}
-
 
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();

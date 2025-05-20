@@ -2,11 +2,9 @@ package es.etg.dam.tfg.programa.servicio;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.modelo.Genero;
-import es.etg.dam.tfg.programa.modelo.Compania;
 import es.etg.dam.tfg.programa.modelo.Consola;
 import es.etg.dam.tfg.programa.repositorio.VideojuegoRepositorio;
 import es.etg.dam.tfg.programa.repositorio.GeneroRepositorio;
-import es.etg.dam.tfg.programa.repositorio.CompaniaRepositorio;
 import es.etg.dam.tfg.programa.repositorio.ConsolaRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,15 +22,13 @@ public class VideojuegoServicio {
     private final VideojuegoRepositorio videojuegoRepositorio;
     private final GeneroRepositorio generoRepositorio;
     private final ConsolaRepositorio consolaRepositorio;
-    private final CompaniaRepositorio companiaRepositorio;
 
     @Autowired
     public VideojuegoServicio(VideojuegoRepositorio videojuegoRepositorio, GeneroRepositorio generoRepositorio,
-            ConsolaRepositorio consolaRepositorio, CompaniaRepositorio companiaRepositorio) {
+            ConsolaRepositorio consolaRepositorio) {
         this.videojuegoRepositorio = videojuegoRepositorio;
         this.generoRepositorio = generoRepositorio;
         this.consolaRepositorio = consolaRepositorio;
-        this.companiaRepositorio = companiaRepositorio;
     }
 
     @Transactional
@@ -53,19 +49,6 @@ public class VideojuegoServicio {
                         .ifPresent(managedConsolas::add);
             }
             videojuego.setConsolas(managedConsolas);
-        }
-
-        if (videojuego.getCompania() != null && videojuego.getCompania().getNombre() != null) {
-            Compania comp = videojuego.getCompania();
-
-            if (comp.getPais() == null) {
-                comp.setPais("Desconocido");
-            }
-
-            Compania existente = companiaRepositorio.findByNombreAndPais(comp.getNombre(), comp.getPais())
-                    .orElseGet(() -> companiaRepositorio.save(comp));
-
-            videojuego.setCompania(existente);
         }
 
         Videojuego guardado = videojuegoRepositorio.save(videojuego);
