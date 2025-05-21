@@ -202,7 +202,6 @@ public class ControladorBusqueda {
                 hBox.getChildren().add(btnAgregar);
             }
         }
-
         return hBox;
     }
 
@@ -246,7 +245,7 @@ public class ControladorBusqueda {
         return btn;
     }
 
-    private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
+     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
         Videojuego v = new Videojuego();
         v.setNombre(temp.nombre());
         v.setFechaLanzamiento(temp.fecha());
@@ -293,53 +292,53 @@ public class ControladorBusqueda {
         }
 
         if (v.isEsFisico()) {
-            Ubicacion seleccionada = null;
-
-            while (seleccionada == null) {
-                List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
-
-                if (!ubicaciones.isEmpty()) {
-                    ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-                    dialog.setTitle("Seleccionar ubicación");
-                    dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
-                    dialog.setContentText("Ubicación:");
-                    Optional<Ubicacion> resultado = dialog.showAndWait();
-                    if (resultado.isPresent()) {
-                        seleccionada = resultado.get();
-                        break;
-                    }
-                }
-
-                final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-                FXMLSoporte.abrirVentanaSecundaria(
-                        applicationContext,
-                        RutaFXML.NUEVA_UBICACION,
-                        "Nueva Ubicación",
-                        (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> nuevaUbicacion[0] = u));
-
-                while (nuevaUbicacion[0] == null) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-
-                if (nuevaUbicacion[0] != null) {
-                    seleccionada = nuevaUbicacion[0];
-                }
-            }
-
-            if (seleccionada == null) {
-                AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
-                throw new RuntimeException("Ubicación no establecida para juego físico.");
-            }
-
+            Ubicacion seleccionada = obtenerUbicacionParaJuegoFisico();
             v.setUbicacion(seleccionada);
         }
 
         return videojuegoServicio.guardar(v);
     }
+
+    private Ubicacion obtenerUbicacionParaJuegoFisico() {
+    List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
+
+    if (!ubicaciones.isEmpty()) {
+        ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
+        dialog.setTitle("Seleccionar ubicación");
+        dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
+        dialog.setContentText("Ubicación:");
+
+        Optional<Ubicacion> resultado = dialog.showAndWait();
+        if (resultado.isPresent()) {
+            return resultado.get();
+        }
+    }
+
+    final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
+
+    Stage stage = new Stage();
+    FXMLSoporte.abrirEInicializar(
+        applicationContext,
+        RutaFXML.NUEVA_UBICACION,
+        "Nueva Ubicación",
+        stage,
+        (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
+            nuevaUbicacion[0] = u;
+            stage.close();
+        })
+    );
+
+    stage.showAndWait(); 
+
+    if (nuevaUbicacion[0] != null) {
+        return nuevaUbicacion[0];
+    }
+
+    AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
+    throw new RuntimeException("Ubicación no establecida para juego físico.");
+}
+
+
 
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();

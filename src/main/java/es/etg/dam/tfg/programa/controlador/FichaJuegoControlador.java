@@ -21,6 +21,8 @@ public class FichaJuegoControlador {
     @FXML private Label lblEmpresa;
     @FXML private Label lblGeneros;
     @FXML private Label lblConsolas;
+    @FXML private Label lblFisico;
+    @FXML private Label lblUbicacion;
 
     private Stage stage;
 
@@ -33,6 +35,8 @@ public class FichaJuegoControlador {
             (juego.getCompania() != null ? juego.getCompania().getNombre() : "N/A"));
         lblGeneros.setText("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
         lblConsolas.setText("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
+        lblFisico.setText("Formato: " + (juego.isEsFisico() ? "Físico" : "Digital"));
+        lblUbicacion.setText("Ubicación: " + (null != juego.getUbicacion() ? juego.getUbicacion().getLugar() + "," + juego.getUbicacion().getZona() : "N/A"));
         ImagenUtils.cargarImagen(imgPortada, juego.getPortadaUrl());
     }
 

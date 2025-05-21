@@ -21,6 +21,8 @@
         <Label fx:id="lblEmpresa" style="-fx-font-size: 14px; -fx-text-fill: #777777;" />
         <Label fx:id="lblGeneros" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #555555;" />
         <Label fx:id="lblConsolas" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #555555;" />
+        <Label fx:id="lblFisico" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #555555;" />
+        <Label fx:id="lblUbicacion" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #555555;" />
 
         <Button text="Cerrar" onAction="#cerrarVentana"
                 maxWidth="200" style="-fx-font-size: 16px; -fx-background-color: #0078D4; -fx-text-fill: white; -fx-padding: 10 20;" />
