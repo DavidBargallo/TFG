@@ -196,11 +196,35 @@ public class ControladorBusqueda {
                             .existsById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
                     .orElse(false);
 
-            if (!yaEnBiblioteca) {
-                Button btnAgregar = crearBotonAgregar(usuario, existente.orElse(null),
-                        new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
-                hBox.getChildren().add(btnAgregar);
+            // if (!yaEnBiblioteca) {
+            // Button btnAgregar = crearBotonAgregar(usuario, existente.orElse(null),
+            // new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
+            // hBox.getChildren().add(btnAgregar);
+            // }
+            if (yaEnBiblioteca) {
+                // No mostrar botones si ya está en biblioteca
+                return hBox;
             }
+
+            Optional<UsuarioVideojuego> uvOpt = existente
+                    .map(v -> usuarioVideojuegoRepositorio
+                            .findById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
+                    .flatMap(v -> v);
+
+            boolean estaEnWishlist = uvOpt.map(UsuarioVideojuego::isEnWishlist).orElse(false);
+
+            // Botón para agregar a biblioteca
+            Button btnAgregarBiblio = crearBotonAgregar(usuario, existente.orElse(null),
+                    new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
+            hBox.getChildren().add(btnAgregarBiblio);
+
+            // Si NO está en wishlist, mostrar botón para agregar a wishlist
+            if (!estaEnWishlist) {
+                Button btnWishlist = crearBotonWishlist(usuario, existente.orElse(null),
+                        new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
+                hBox.getChildren().add(btnWishlist);
+            }
+
         }
         return hBox;
     }
@@ -217,35 +241,133 @@ public class ControladorBusqueda {
 
     private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
         Button btn = new Button("Agregar a biblioteca");
+        // WORK IN PROGRESS
         btn.setOnAction(e -> {
             try {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(temp);
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
 
-                if (usuarioVideojuegoRepositorio.existsById(id)) {
-                    AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
-                    return;
+                Optional<UsuarioVideojuego> relacionExistente = usuarioVideojuegoRepositorio.findById(id);
+
+                if (relacionExistente.isPresent()) {
+                    UsuarioVideojuego relacion = relacionExistente.get();
+                    if (!relacion.isEnWishlist()) {
+                        AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
+                        return;
+                    }
+
+                    // Estaba en wishlist → lo movemos a biblioteca
+                    relacion.setEnWishlist(false);
+                    usuarioVideojuegoRepositorio.save(relacion);
+                    AlertaUtils.mostrarAlerta("Juego movido de wishlist a tu biblioteca.");
+                } else {
+                    // No estaba en nada → agregar normalmente
+                    UsuarioVideojuego nuevaRelacion = new UsuarioVideojuego();
+                    nuevaRelacion.setId(id);
+                    nuevaRelacion.setUsuario(usuario);
+                    nuevaRelacion.setVideojuego(juego);
+                    nuevaRelacion.setEnWishlist(false);
+
+                    usuarioVideojuegoRepositorio.save(nuevaRelacion);
+                    AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
                 }
 
-                UsuarioVideojuego relacion = new UsuarioVideojuego();
-                relacion.setId(id);
-                relacion.setUsuario(usuario);
-                relacion.setVideojuego(juego);
-                relacion.setEnWishlist(false);
-
-                usuarioVideojuegoRepositorio.save(relacion);
-
-                AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
                 btn.setVisible(false);
 
             } catch (Exception ex) {
                 AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
             }
         });
+        // WORK IN PROGRESS
+        // btn.setOnAction(e -> {
+        // try {
+        // Videojuego juego = (juegoExistente != null) ? juegoExistente :
+        // crearVideojuegoDesdeApi(temp);
+        // UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(),
+        // juego.getId());
+
+        // if (usuarioVideojuegoRepositorio.existsById(id)) {
+        // AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
+        // return;
+        // }
+
+        // UsuarioVideojuego relacion = new UsuarioVideojuego();
+        // relacion.setId(id);
+        // relacion.setUsuario(usuario);
+        // relacion.setVideojuego(juego);
+        // relacion.setEnWishlist(false);
+
+        // usuarioVideojuegoRepositorio.save(relacion);
+
+        // AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
+        // btn.setVisible(false);
+
+        // } catch (Exception ex) {
+        // AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
+        // }
+        // });
         return btn;
     }
 
-     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
+    // Work in progress
+    private Button crearBotonWishlist(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
+        Button btn = new Button("Agregar a wishlist");
+
+        btn.setOnAction(e -> {
+            try {
+                Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoBasico(temp);
+                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
+
+                Optional<UsuarioVideojuego> existente = usuarioVideojuegoRepositorio.findById(id);
+
+                UsuarioVideojuego relacion;
+                if (existente.isPresent()) {
+                    relacion = existente.get();
+                    if (relacion.isEnWishlist()) {
+                        AlertaUtils.mostrarAlerta("El juego ya está en tu wishlist.");
+                        return;
+                    }
+                    relacion.setEnWishlist(true);
+                } else {
+                    relacion = new UsuarioVideojuego();
+                    relacion.setId(id);
+                    relacion.setUsuario(usuario);
+                    relacion.setVideojuego(juego);
+                    relacion.setEnWishlist(true);
+                }
+
+                usuarioVideojuegoRepositorio.save(relacion);
+
+                AlertaUtils.mostrarAlerta("¡Juego agregado a tu wishlist!");
+                btn.setVisible(false);
+
+            } catch (Exception ex) {
+                AlertaUtils.mostrarAlerta("Error al agregar a wishlist: " + ex.getMessage());
+            }
+        });
+
+        return btn;
+    }
+
+    private Videojuego crearVideojuegoBasico(VideojuegoTemp temp) {
+        // Si ya existe en BDD, lo retornamos
+        Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(temp.nombre(),
+                temp.fecha());
+        if (existente.isPresent())
+            return existente.get();
+
+        Videojuego v = new Videojuego();
+        v.setNombre(temp.nombre());
+        v.setFechaLanzamiento(temp.fecha());
+        v.setPortadaUrl(temp.imagenUrl());
+        v.setEsFisico(false); // Por defecto, no preguntamos en wishlist
+
+        return videojuegoServicio.guardar(v);
+    }
+
+    // Work in progress
+
+    private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
         Videojuego v = new Videojuego();
         v.setNombre(temp.nombre());
         v.setFechaLanzamiento(temp.fecha());
@@ -300,45 +422,42 @@ public class ControladorBusqueda {
     }
 
     private Ubicacion obtenerUbicacionParaJuegoFisico() {
-    List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
+        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
 
-    if (!ubicaciones.isEmpty()) {
-        ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-        dialog.setTitle("Seleccionar ubicación");
-        dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
-        dialog.setContentText("Ubicación:");
+        if (!ubicaciones.isEmpty()) {
+            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
+            dialog.setTitle("Seleccionar ubicación");
+            dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
+            dialog.setContentText("Ubicación:");
 
-        Optional<Ubicacion> resultado = dialog.showAndWait();
-        if (resultado.isPresent()) {
-            return resultado.get();
+            Optional<Ubicacion> resultado = dialog.showAndWait();
+            if (resultado.isPresent()) {
+                return resultado.get();
+            }
         }
+
+        final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
+
+        Stage stage = new Stage();
+        FXMLSoporte.abrirEInicializar(
+                applicationContext,
+                RutaFXML.NUEVA_UBICACION,
+                "Nueva Ubicación",
+                stage,
+                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
+                    nuevaUbicacion[0] = u;
+                    stage.close();
+                }));
+
+        stage.showAndWait();
+
+        if (nuevaUbicacion[0] != null) {
+            return nuevaUbicacion[0];
+        }
+
+        AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
+        throw new RuntimeException("Ubicación no establecida para juego físico.");
     }
-
-    final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-
-    Stage stage = new Stage();
-    FXMLSoporte.abrirEInicializar(
-        applicationContext,
-        RutaFXML.NUEVA_UBICACION,
-        "Nueva Ubicación",
-        stage,
-        (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
-            nuevaUbicacion[0] = u;
-            stage.close();
-        })
-    );
-
-    stage.showAndWait(); 
-
-    if (nuevaUbicacion[0] != null) {
-        return nuevaUbicacion[0];
-    }
-
-    AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
-    throw new RuntimeException("Ubicación no establecida para juego físico.");
-}
-
-
 
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();

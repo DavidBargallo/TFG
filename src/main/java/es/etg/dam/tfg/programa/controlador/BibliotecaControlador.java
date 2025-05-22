@@ -195,7 +195,7 @@ public class BibliotecaControlador {
 
     @FXML
     private void abrirEstadisticas() {
-        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_estadisticas.fxml", "Estadísticas",
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.ESTADISTICAS, "Estadísticas",
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
@@ -211,8 +211,14 @@ public class BibliotecaControlador {
     @FXML
     private void cerrarSesion() {
         Sesion.cerrarSesion();
-        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_inicio.fxml", "Iniciar sesión",
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.LOGIN, "Iniciar sesión",
                 (Stage) contenedorResultados.getScene().getWindow());
+    }
+
+    @FXML
+    private void abrirWishlist() {
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.WISHLIST, "Wishlist", 
+            (Stage) contenedorResultados.getScene().getWindow());
     }
 
     @FXML

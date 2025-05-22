@@ -1,6 +1,7 @@
 package es.etg.dam.tfg.programa;
 
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -17,10 +18,12 @@ public class JavaFXApp extends Application {
 
     private ConfigurableApplicationContext applicationContext;
     private FXMLLoader loader;
+    private static HostServices hostServices;
 
     @Override
     public void init() throws Exception {
         applicationContext = App.getApplicationContext();
+        hostServices = getHostServices();
     }
 
     @Override
@@ -49,4 +52,8 @@ public class JavaFXApp extends Application {
         }
         Platform.exit();
     }
+
+    public static HostServices getHostServicesInstance() {
+    return hostServices;
+}
 }

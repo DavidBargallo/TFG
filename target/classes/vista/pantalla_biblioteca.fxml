@@ -20,8 +20,7 @@
             </Menu>
             <Menu text="Wishlist">
                 <items>
-                    <MenuItem fx:id="menuVerWishlist" text="Ver wishlist" />
-                    <MenuItem fx:id="menuModificarWishlist" text="Modificar wishlist" />
+                    <MenuItem fx:id="menuVerWishlist" text="Ver wishlist" onAction="#abrirWishlist" />
                     <MenuItem fx:id="menuExportarWishlist" text="Exportar wishlist" />
                 </items>
             </Menu>

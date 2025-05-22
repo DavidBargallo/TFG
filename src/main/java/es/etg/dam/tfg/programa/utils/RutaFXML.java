@@ -8,5 +8,6 @@ public class RutaFXML {
     public static final String ESTADISTICAS = "/vista/pantalla_estadisticas.fxml";
     public static final String FICHA_JUEGO = "/vista/pantalla_ficha_juego.fxml";
     public static final String NUEVA_UBICACION = "/vista/pantalla_nueva_ubicacion.fxml";
+    public static final String WISHLIST = "/vista/pantalla_wishlist.fxml";
 }
 
