@@ -112,16 +112,18 @@ public class BibliotecaControlador {
     }
 
     private List<Videojuego> cargarJuegosUsuario() {
-        var usuario = Sesion.getUsuarioActual();
-        if (usuario == null)
-            return Collections.emptyList();
+    var usuario = Sesion.getUsuarioActual();
+    if (usuario == null)
+        return Collections.emptyList();
 
-        return usuarioVideojuegoServicio
-                .obtenerVideojuegosPorUsuario(usuario.getId())
-                .stream()
-                .map(UsuarioVideojuego::getVideojuego)
-                .toList();
-    }
+    return usuarioVideojuegoServicio
+            .obtenerVideojuegosPorUsuario(usuario.getId())
+            .stream()
+            .filter(uv -> !uv.isEnWishlist()) // Línea de código para la wishlist.
+            .map(UsuarioVideojuego::getVideojuego)
+            .toList();
+}
+
 
     private void mostrarJuegos() {
         List<Videojuego> juegos = cargarJuegosUsuario();

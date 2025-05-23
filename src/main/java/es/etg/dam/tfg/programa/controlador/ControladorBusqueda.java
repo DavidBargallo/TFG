@@ -190,42 +190,35 @@ public class ControladorBusqueda {
 
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario != null) {
-            Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombreJuego, fecha);
-            boolean yaEnBiblioteca = existente
-                    .map(v -> usuarioVideojuegoRepositorio
-                            .existsById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
-                    .orElse(false);
-
-            // if (!yaEnBiblioteca) {
-            // Button btnAgregar = crearBotonAgregar(usuario, existente.orElse(null),
-            // new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
-            // hBox.getChildren().add(btnAgregar);
-            // }
-            if (yaEnBiblioteca) {
-                // No mostrar botones si ya está en biblioteca
-                return hBox;
-            }
+            Optional<Videojuego> existente = videojuegoRepositorio.findConRelacionesByNombreAndFecha(nombreJuego,
+                    fecha);
 
             Optional<UsuarioVideojuego> uvOpt = existente
                     .map(v -> usuarioVideojuegoRepositorio
                             .findById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
                     .flatMap(v -> v);
 
-            boolean estaEnWishlist = uvOpt.map(UsuarioVideojuego::isEnWishlist).orElse(false);
+            if (uvOpt.isPresent()) {
+                UsuarioVideojuego relacion = uvOpt.get();
+                if (!relacion.isEnWishlist()) {
 
-            // Botón para agregar a biblioteca
-            Button btnAgregarBiblio = crearBotonAgregar(usuario, existente.orElse(null),
-                    new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
-            hBox.getChildren().add(btnAgregarBiblio);
+                    return hBox;
+                }
 
-            // Si NO está en wishlist, mostrar botón para agregar a wishlist
-            if (!estaEnWishlist) {
-                Button btnWishlist = crearBotonWishlist(usuario, existente.orElse(null),
+                Button btnAgregarBiblio = crearBotonAgregar(usuario, existente.orElse(null),
                         new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
-                hBox.getChildren().add(btnWishlist);
-            }
+                hBox.getChildren().add(btnAgregarBiblio);
 
+            } else {
+
+                Button btnAgregarBiblio = crearBotonAgregar(usuario, null,
+                        new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
+                Button btnWishlist = crearBotonWishlist(usuario, null,
+                        new VideojuegoTemp(nombreJuego, fecha, imagenUrl, juegoJson));
+                hBox.getChildren().addAll(btnAgregarBiblio, btnWishlist);
+            }
         }
+
         return hBox;
     }
 
@@ -241,12 +234,12 @@ public class ControladorBusqueda {
 
     private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
         Button btn = new Button("Agregar a biblioteca");
-        // WORK IN PROGRESS
+
         btn.setOnAction(e -> {
             try {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(temp);
-                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
 
+                UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
                 Optional<UsuarioVideojuego> relacionExistente = usuarioVideojuegoRepositorio.findById(id);
 
                 if (relacionExistente.isPresent()) {
@@ -256,12 +249,48 @@ public class ControladorBusqueda {
                         return;
                     }
 
-                    // Estaba en wishlist → lo movemos a biblioteca
+                    if (juego.getConsolas() == null || juego.getConsolas().isEmpty()) {
+                        juego.setConsolas(Set.of(seleccionarConsola(temp.json())));
+                    }
+                    if (juego.getGeneros() == null || juego.getGeneros().isEmpty()) {
+                        juego.setGeneros(obtenerGeneros(temp.json()));
+                    }
+                    if (juego.getCompania() == null && temp.json().has("developers")) {
+                        for (JsonNode dev : temp.json().get("developers")) {
+                            if (dev.hasNonNull("name")) {
+                                String nombre = dev.get("name").asText();
+                                Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null,
+                                        null);
+                                if (compania != null) {
+                                    juego.setCompania(compania);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    boolean esFisico = preguntarFormatoJuego();
+                    juego.setEsFisico(esFisico);
+                    if (esFisico) {
+                        juego.setUbicacion(obtenerUbicacionParaJuegoFisico());
+                    }
+
+                    videojuegoServicio.guardar(juego);
+
                     relacion.setEnWishlist(false);
                     usuarioVideojuegoRepositorio.save(relacion);
+
                     AlertaUtils.mostrarAlerta("Juego movido de wishlist a tu biblioteca.");
                 } else {
-                    // No estaba en nada → agregar normalmente
+                    boolean esFisico = preguntarFormatoJuego();
+                    juego.setEsFisico(esFisico);
+                    if (esFisico) {
+                        juego.setUbicacion(obtenerUbicacionParaJuegoFisico());
+                    }
+
+                    juego.setConsolas(Set.of(seleccionarConsola(temp.json())));
+                    videojuegoServicio.guardar(juego);
+
                     UsuarioVideojuego nuevaRelacion = new UsuarioVideojuego();
                     nuevaRelacion.setId(id);
                     nuevaRelacion.setUsuario(usuario);
@@ -278,38 +307,10 @@ public class ControladorBusqueda {
                 AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
             }
         });
-        // WORK IN PROGRESS
-        // btn.setOnAction(e -> {
-        // try {
-        // Videojuego juego = (juegoExistente != null) ? juegoExistente :
-        // crearVideojuegoDesdeApi(temp);
-        // UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(),
-        // juego.getId());
 
-        // if (usuarioVideojuegoRepositorio.existsById(id)) {
-        // AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
-        // return;
-        // }
-
-        // UsuarioVideojuego relacion = new UsuarioVideojuego();
-        // relacion.setId(id);
-        // relacion.setUsuario(usuario);
-        // relacion.setVideojuego(juego);
-        // relacion.setEnWishlist(false);
-
-        // usuarioVideojuegoRepositorio.save(relacion);
-
-        // AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
-        // btn.setVisible(false);
-
-        // } catch (Exception ex) {
-        // AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
-        // }
-        // });
         return btn;
     }
 
-    // Work in progress
     private Button crearBotonWishlist(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
         Button btn = new Button("Agregar a wishlist");
 
@@ -350,7 +351,6 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoBasico(VideojuegoTemp temp) {
-        // Si ya existe en BDD, lo retornamos
         Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(temp.nombre(),
                 temp.fecha());
         if (existente.isPresent())
@@ -360,22 +360,40 @@ public class ControladorBusqueda {
         v.setNombre(temp.nombre());
         v.setFechaLanzamiento(temp.fecha());
         v.setPortadaUrl(temp.imagenUrl());
-        v.setEsFisico(false); // Por defecto, no preguntamos en wishlist
+        v.setEsFisico(false);
 
+        v.setGeneros(obtenerGeneros(temp.json()));
+
+        if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
+            for (JsonNode dev : temp.json().get("developers")) {
+                if (dev.hasNonNull("name")) {
+                    String nombre = dev.get("name").asText();
+                    Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null, null);
+                    if (compania != null) {
+                        v.setCompania(compania);
+                        break;
+                    }
+                }
+            }
+        }
         return videojuegoServicio.guardar(v);
     }
 
-    // Work in progress
-
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
+        Optional<Videojuego> existente = videojuegoRepositorio
+                .findConRelacionesByNombreAndFecha(temp.nombre(), temp.fecha());
+        if (existente.isPresent()) {
+            return existente.get();
+        }
+
         Videojuego v = new Videojuego();
         v.setNombre(temp.nombre());
         v.setFechaLanzamiento(temp.fecha());
         v.setPortadaUrl(temp.imagenUrl());
-        v.setEsFisico(preguntarFormatoJuego());
+        v.setEsFisico(false);
 
         v.setGeneros(obtenerGeneros(temp.json()));
-        v.setConsolas(Set.of(seleccionarConsola(temp.json())));
+        //v.setConsolas(Set.of(seleccionarConsola(temp.json())));
 
         try {
             JsonNode juegoCompleto = rawgApiServicio
@@ -385,8 +403,7 @@ public class ControladorBusqueda {
                 for (JsonNode dev : juegoCompleto.get("developers")) {
                     if (dev.hasNonNull("name")) {
                         String nombre = dev.get("name").asText();
-                        String pais = "Desconocido";
-                        Compania compania = companiaServicio.guardarSiNoExiste(nombre, pais, null, null);
+                        Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null, null);
                         if (compania != null) {
                             v.setCompania(compania);
                             break;
@@ -396,26 +413,6 @@ public class ControladorBusqueda {
             }
         } catch (Exception e) {
             System.out.println("Error al obtener información detallada del juego: " + e.getMessage());
-        }
-
-        if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
-            for (JsonNode dev : temp.json().get("developers")) {
-                if (dev.hasNonNull("name")) {
-                    String nombre = dev.get("name").asText();
-                    String pais = "Desconocido";
-                    Compania compania = companiaServicio.guardarSiNoExiste(nombre, pais, null, null);
-
-                    if (compania != null) {
-                        v.setCompania(compania);
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (v.isEsFisico()) {
-            Ubicacion seleccionada = obtenerUbicacionParaJuegoFisico();
-            v.setUbicacion(seleccionada);
         }
 
         return videojuegoServicio.guardar(v);
