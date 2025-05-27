@@ -15,11 +15,11 @@ import java.util.Optional;
 public interface UsuarioVideojuegoRepositorio extends JpaRepository<UsuarioVideojuego, UsuarioVideojuegoID> {
 
     @Query("SELECT uv FROM UsuarioVideojuego uv " +
-       "JOIN FETCH uv.videojuego v " +
-       "LEFT JOIN FETCH v.generos " +
-       "LEFT JOIN FETCH v.consolas " +
-       "LEFT JOIN FETCH v.compania " +
-       "WHERE uv.usuario.id = :usuarioId")
+            "JOIN FETCH uv.videojuego v " +
+            "LEFT JOIN FETCH v.generos " +
+            "LEFT JOIN FETCH v.consolas " +
+            "LEFT JOIN FETCH v.compania " +
+            "WHERE uv.usuario.id = :usuarioId")
     List<UsuarioVideojuego> findWithVideojuegoCompletoByUsuarioId(@Param("usuarioId") Integer usuarioId);
 
     List<UsuarioVideojuego> findByUsuarioId(Integer usuarioId);
@@ -30,6 +30,14 @@ public interface UsuarioVideojuegoRepositorio extends JpaRepository<UsuarioVideo
 
     Optional<UsuarioVideojuego> findById(UsuarioVideojuegoID id);
 
-    List<UsuarioVideojuego> findByUsuarioIdAndEnWishlist(Integer usuarioId, boolean enWishlist);
-}
+    @Query("""
+                SELECT uv FROM UsuarioVideojuego uv
+                JOIN FETCH uv.videojuego v
+                LEFT JOIN FETCH v.generos
+                LEFT JOIN FETCH v.consolas
+                LEFT JOIN FETCH v.compania
+                WHERE uv.usuario.id = :usuarioId AND uv.enWishlist = true
+            """)
+    List<UsuarioVideojuego> findConVideojuegoCompletoEnWishlist(@Param("usuarioId") Integer usuarioId);
 
+}

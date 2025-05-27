@@ -119,7 +119,7 @@ public class BibliotecaControlador {
     return usuarioVideojuegoServicio
             .obtenerVideojuegosPorUsuario(usuario.getId())
             .stream()
-            .filter(uv -> !uv.isEnWishlist()) // Línea de código para la wishlist.
+            .filter(uv -> !uv.isEnWishlist())
             .map(UsuarioVideojuego::getVideojuego)
             .toList();
 }

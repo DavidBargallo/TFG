@@ -37,8 +37,9 @@ public class UsuarioVideojuegoServicio {
         return usuarioVideojuegoRepositorio.findById(id);
     }
 
+    @Transactional
     public List<UsuarioVideojuego> obtenerVideojuegosEnWishlist(Integer usuarioId) {
-        return usuarioVideojuegoRepositorio.findByUsuarioIdAndEnWishlist(usuarioId, true);
+        return usuarioVideojuegoRepositorio.findConVideojuegoCompletoEnWishlist(usuarioId);
     }
 
     @Transactional

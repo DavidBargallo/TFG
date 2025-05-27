@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import es.etg.dam.tfg.programa.modelo.*;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
 import es.etg.dam.tfg.programa.repositorio.*;
-import es.etg.dam.tfg.programa.servicio.CompaniaServicio;
-import es.etg.dam.tfg.programa.servicio.RawgApiServicio;
-import es.etg.dam.tfg.programa.servicio.UbicacionServicio;
-import es.etg.dam.tfg.programa.servicio.VideojuegoServicio;
+import es.etg.dam.tfg.programa.servicio.*;
 import es.etg.dam.tfg.programa.utils.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,7 +32,7 @@ public class ControladorBusqueda {
     private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
     private final RawgApiServicio rawgApiServicio;
     private final GeneroRepositorio generoRepositorio;
-    private final ConsolaRepositorio consolaRepositorio;
+    private final ConsolaServicio consolaServicio;
     private final VideojuegoServicio videojuegoServicio;
     private final CompaniaServicio companiaServicio;
     private final UbicacionServicio ubicacionServicio;
@@ -68,7 +65,7 @@ public class ControladorBusqueda {
         cargarPlataformas();
         cargarGeneros();
 
-        comboOrdenApi.getItems().addAll("Fecha más reciente", "Fecha más antigua");
+        comboOrdenApi.getItems().addAll("Ninguno", "Fecha más reciente", "Fecha más antigua");
         comboOrdenApi.getSelectionModel().selectFirst();
 
         btnBuscarApi.setOnAction(this::buscarJuegos);
@@ -118,23 +115,56 @@ public class ControladorBusqueda {
     }
 
     private void cargarPaginaApi() {
-        String nombre = txtNombreApi.getText().trim();
+        String nombre = txtNombreApi.getText().trim().toLowerCase();
         String generoSeleccionado = comboGeneroApi.getValue();
         String consolaSeleccionada = comboConsolaApi.getValue();
         String ordenSeleccionado = comboOrdenApi.getValue();
 
         Integer generoId = "Todos".equals(generoSeleccionado) ? null : mapaGeneros.get(generoSeleccionado);
         Integer plataformaId = "Todas".equals(consolaSeleccionada) ? null : mapaConsolas.get(consolaSeleccionada);
+        String ordenFinal = "Ninguno".equals(ordenSeleccionado) ? null : ordenSeleccionado;
 
         try {
-            JsonNode respuesta = rawgApiServicio.buscarJuegos(nombre, generoId, plataformaId, ordenSeleccionado,
+            JsonNode respuesta = rawgApiServicio.buscarJuegos(nombre, generoId, plataformaId, ordenFinal,
                     paginaActualApi, JUEGOS_POR_PAGINA);
 
             JsonNode juegos = respuesta.get("results");
             contenedorResultadosApi.getChildren().clear();
 
             if (juegos != null && juegos.isArray() && juegos.size() > 0) {
-                juegos.forEach(j -> contenedorResultadosApi.getChildren().add(crearFichaJuego(j)));
+                List<JsonNode> listaJuegos = new ArrayList<>();
+                juegos.forEach(listaJuegos::add);
+
+                listaJuegos.removeIf(juego -> {
+                    if (!"Todas".equals(consolaSeleccionada) && !tienePlataforma(juego, consolaSeleccionada)) {
+                        return true;
+                    }
+                    if (!"Todos".equals(generoSeleccionado) && !tieneGenero(juego, generoSeleccionado)) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                listaJuegos.sort(
+                        Comparator
+                                .comparing((JsonNode j) -> !j.get("name").asText().toLowerCase().contains(nombre))
+
+                                .thenComparing((JsonNode j1, JsonNode j2) -> {
+                                    if ("Fecha más reciente".equals(ordenSeleccionado)) {
+                                        return extraerFecha(j2).compareTo(extraerFecha(j1));
+                                    } else if ("Fecha más antigua".equals(ordenSeleccionado)) {
+                                        return extraerFecha(j1).compareTo(extraerFecha(j2));
+                                    }
+                                    return 0;
+                                }));
+
+                if (listaJuegos.isEmpty()) {
+                    contenedorResultadosApi.getChildren()
+                            .add(new Label("No se encontraron juegos con los filtros aplicados."));
+                } else {
+                    listaJuegos.forEach(j -> contenedorResultadosApi.getChildren().add(crearFichaJuego(j)));
+                }
+
             } else {
                 contenedorResultadosApi.getChildren()
                         .add(new Label("No se encontraron juegos con los filtros aplicados."));
@@ -147,6 +177,45 @@ public class ControladorBusqueda {
         } catch (IOException | InterruptedException e) {
             AlertaUtils.mostrarAlerta("Error al cargar resultados: " + e.getMessage());
         }
+    }
+
+    private boolean tieneGenero(JsonNode juego, String generoSeleccionado) {
+        if (generoSeleccionado == null || generoSeleccionado.equals("Todos"))
+            return true;
+        if (!juego.has("genres"))
+            return false;
+
+        for (JsonNode gen : juego.get("genres")) {
+            String nombre = gen.get("name").asText();
+            if (generoSeleccionado.equalsIgnoreCase(nombre))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean tienePlataforma(JsonNode juego, String consolaSeleccionada) {
+        if (consolaSeleccionada == null || consolaSeleccionada.equals("Todas"))
+            return false;
+        if (!juego.has("platforms"))
+            return false;
+
+        for (JsonNode plat : juego.get("platforms")) {
+            String nombre = plat.get("platform").get("name").asText();
+            if (consolaSeleccionada.equalsIgnoreCase(nombre))
+                return true;
+        }
+        return false;
+    }
+
+    private LocalDate extraerFecha(JsonNode juego) {
+        if (juego.hasNonNull("released")) {
+            try {
+                return LocalDate.parse(juego.get("released").asText());
+            } catch (Exception e) {
+                return LocalDate.of(1900, 1, 1);
+            }
+        }
+        return LocalDate.of(1900, 1, 1);
     }
 
     @FXML
@@ -250,7 +319,8 @@ public class ControladorBusqueda {
                     }
 
                     if (juego.getConsolas() == null || juego.getConsolas().isEmpty()) {
-                        juego.setConsolas(Set.of(seleccionarConsola(temp.json())));
+                        juego.setConsolas(
+                                Set.of(FormularioJuegoUtils.seleccionarConsolaDesdeJson(temp.json(), consolaServicio)));
                     }
                     if (juego.getGeneros() == null || juego.getGeneros().isEmpty()) {
                         juego.setGeneros(obtenerGeneros(temp.json()));
@@ -269,10 +339,11 @@ public class ControladorBusqueda {
                         }
                     }
 
-                    boolean esFisico = preguntarFormatoJuego();
+                    boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
                     juego.setEsFisico(esFisico);
                     if (esFisico) {
-                        juego.setUbicacion(obtenerUbicacionParaJuegoFisico());
+                        juego.setUbicacion(FormularioJuegoUtils.obtenerUbicacionParaJuegoFisico(ubicacionServicio,
+                                applicationContext));
                     }
 
                     videojuegoServicio.guardar(juego);
@@ -282,13 +353,15 @@ public class ControladorBusqueda {
 
                     AlertaUtils.mostrarAlerta("Juego movido de wishlist a tu biblioteca.");
                 } else {
-                    boolean esFisico = preguntarFormatoJuego();
+                    boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
                     juego.setEsFisico(esFisico);
                     if (esFisico) {
-                        juego.setUbicacion(obtenerUbicacionParaJuegoFisico());
+                        juego.setUbicacion(FormularioJuegoUtils.obtenerUbicacionParaJuegoFisico(ubicacionServicio,
+                                applicationContext));
                     }
 
-                    juego.setConsolas(Set.of(seleccionarConsola(temp.json())));
+                    juego.setConsolas(
+                            Set.of(FormularioJuegoUtils.seleccionarConsolaDesdeJson(temp.json(), consolaServicio)));
                     videojuegoServicio.guardar(juego);
 
                     UsuarioVideojuego nuevaRelacion = new UsuarioVideojuego();
@@ -393,7 +466,7 @@ public class ControladorBusqueda {
         v.setEsFisico(false);
 
         v.setGeneros(obtenerGeneros(temp.json()));
-        //v.setConsolas(Set.of(seleccionarConsola(temp.json())));
+        // v.setConsolas(Set.of(seleccionarConsola(temp.json())));
 
         try {
             JsonNode juegoCompleto = rawgApiServicio
@@ -418,44 +491,6 @@ public class ControladorBusqueda {
         return videojuegoServicio.guardar(v);
     }
 
-    private Ubicacion obtenerUbicacionParaJuegoFisico() {
-        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
-
-        if (!ubicaciones.isEmpty()) {
-            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-            dialog.setTitle("Seleccionar ubicación");
-            dialog.setHeaderText("Elige una ubicación ya registrada o cancela para crear una nueva:");
-            dialog.setContentText("Ubicación:");
-
-            Optional<Ubicacion> resultado = dialog.showAndWait();
-            if (resultado.isPresent()) {
-                return resultado.get();
-            }
-        }
-
-        final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-
-        Stage stage = new Stage();
-        FXMLSoporte.abrirEInicializar(
-                applicationContext,
-                RutaFXML.NUEVA_UBICACION,
-                "Nueva Ubicación",
-                stage,
-                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
-                    nuevaUbicacion[0] = u;
-                    stage.close();
-                }));
-
-        stage.showAndWait();
-
-        if (nuevaUbicacion[0] != null) {
-            return nuevaUbicacion[0];
-        }
-
-        AlertaUtils.mostrarAlerta("Debes seleccionar o crear una ubicación para un juego físico.");
-        throw new RuntimeException("Ubicación no establecida para juego físico.");
-    }
-
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();
         if (json.has("genres")) {
@@ -465,41 +500,6 @@ public class ControladorBusqueda {
             });
         }
         return generos;
-    }
-
-    private Consola seleccionarConsola(JsonNode json) {
-        List<Consola> consolas = new ArrayList<>();
-        if (json.has("platforms")) {
-            json.get("platforms").forEach(n -> {
-                String nombre = n.get("platform").get("name").asText();
-                consolaRepositorio.findByNombre(nombre).ifPresent(consolas::add);
-            });
-        }
-
-        if (consolas.isEmpty())
-            throw new RuntimeException("No se encontraron consolas válidas.");
-
-        if (consolas.size() == 1)
-            return consolas.get(0);
-
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(consolas.get(0).getNombre(),
-                consolas.stream().map(Consola::getNombre).toList());
-        dialog.setTitle("Seleccionar consola");
-        dialog.setHeaderText("Elige una consola para agregar el juego:");
-        dialog.setContentText("Consola:");
-
-        return dialog.showAndWait()
-                .flatMap(nombre -> consolas.stream().filter(c -> c.getNombre().equals(nombre)).findFirst())
-                .orElseThrow(() -> new RuntimeException("Consola no encontrada."));
-    }
-
-    private boolean preguntarFormatoJuego() {
-        List<String> opciones = List.of("Físico", "Digital");
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("Físico", opciones);
-        dialog.setTitle("Seleccionar formato");
-        dialog.setHeaderText("¿Cómo tienes este juego?");
-        dialog.setContentText("Formato:");
-        return dialog.showAndWait().orElseThrow(() -> new RuntimeException("Selección cancelada.")).equals("Físico");
     }
 
     private record VideojuegoTemp(String nombre, LocalDate fecha, String imagenUrl, JsonNode json) {
