@@ -10,6 +10,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,11 @@ public class EstadisticasControlador {
         private BarChart<String, Number> graficoConsolas;
 
         @FXML
+        private Menu menuCuenta;
+
+        @FXML
         public void initialize() {
+                Sesion.nombreUsuario(menuCuenta);
                 var usuario = Sesion.getUsuarioActual();
                 if (usuario == null)
                         return;

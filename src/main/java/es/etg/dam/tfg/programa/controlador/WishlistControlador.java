@@ -33,12 +33,15 @@ public class WishlistControlador {
     private Label lblPagina;
     @FXML
     private Button btnAnterior, btnSiguiente;
+    @FXML
+    private Menu menuCuenta;
 
     private List<UsuarioVideojuego> juegosWishlist;
     private Paginador<UsuarioVideojuego> paginador;
 
     @FXML
     public void initialize() {
+        Sesion.nombreUsuario(menuCuenta);
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario == null) {
             FXMLSoporte.mostrarError(Mensajes.USUARIO_NO_LOGUEADO);

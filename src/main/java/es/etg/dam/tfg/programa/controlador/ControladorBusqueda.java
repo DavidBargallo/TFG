@@ -58,9 +58,12 @@ public class ControladorBusqueda {
     private ComboBox<String> comboGeneroApi;
     @FXML
     private MenuItem menuVolverBiblioteca;
+    @FXML
+    private Menu menuCuenta;
 
     @FXML
     public void initialize() {
+        Sesion.nombreUsuario(menuCuenta);
         menuVolverBiblioteca.setOnAction(e -> volverABiblioteca());
         cargarPlataformas();
         cargarGeneros();
@@ -466,8 +469,7 @@ public class ControladorBusqueda {
         v.setEsFisico(false);
 
         v.setGeneros(obtenerGeneros(temp.json()));
-        // v.setConsolas(Set.of(seleccionarConsola(temp.json())));
-
+        
         try {
             JsonNode juegoCompleto = rawgApiServicio
                     .consumirApi("https://api.rawg.io/api/games/" + temp.json().get("id").asInt());

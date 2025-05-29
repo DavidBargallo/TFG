@@ -26,8 +26,6 @@
             </Menu>
             <Menu text="Juegos">
                 <items>
-                    <MenuItem fx:id="menuVerJuegos" text="Ver juegos" />
-                    <MenuItem fx:id="menuFiltrarJuegos" text="Filtrar juegos" />
                     <MenuItem fx:id="menuExportarBiblioteca" text="Exportar biblioteca" onAction="#exportarBibliotecaAPDF" />
                 </items>
             </Menu>

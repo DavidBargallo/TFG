@@ -86,4 +86,35 @@ public class FXMLSoporte {
             mostrarError("No se pudo abrir la pantalla: " + e.getMessage());
         }
     }
+
+    public static <T> Stage abrirFormularioUbicacion(
+        ApplicationContext context,
+        String rutaFXML,
+        String titulo,
+        Consumer<T> inicializador) {
+    try {
+        URL url = FXMLSoporte.class.getResource(rutaFXML);
+        if (url == null) {
+            mostrarError("No se pudo encontrar el archivo FXML: " + rutaFXML);
+            return null;
+        }
+
+        FXMLLoader loader = new FXMLLoader(url);
+        loader.setControllerFactory(context::getBean);
+        Parent root = loader.load();
+
+        T controller = loader.getController();
+        inicializador.accept(controller);
+
+        Stage stage = new Stage();
+        stage.setTitle(titulo);
+        stage.setScene(new Scene(root));
+
+        return stage;
+
+    } catch (IOException e) {
+        mostrarError("No se pudo abrir la pantalla: " + e.getMessage());
+        return null;
+    }
+}
 }

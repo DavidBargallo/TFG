@@ -26,41 +26,47 @@ public class FormularioJuegoUtils {
     }
 
     public static Ubicacion obtenerUbicacionParaJuegoFisico(
-            UbicacionServicio ubicacionServicio,
-            ApplicationContext context) {
+        UbicacionServicio ubicacionServicio,
+        ApplicationContext context) {
 
-        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
+    List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
 
-        if (!ubicaciones.isEmpty()) {
-            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-            dialog.setTitle("Seleccionar ubicación");
-            dialog.setHeaderText("Selecciona una ubicación existente o cancela para crear una nueva:");
-            dialog.setContentText("Ubicación:");
-            Optional<Ubicacion> resultado = dialog.showAndWait();
-            if (resultado.isPresent()) {
-                return resultado.get();
-            }
+    if (!ubicaciones.isEmpty()) {
+        ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
+        dialog.setTitle("Seleccionar ubicación");
+        dialog.setHeaderText("Selecciona una ubicación existente o cancela para crear una nueva:");
+        dialog.setContentText("Ubicación:");
+        Optional<Ubicacion> resultado = dialog.showAndWait();
+        if (resultado.isPresent()) {
+            return resultado.get();
         }
-
-        final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-        Stage stage = new Stage();
-        FXMLSoporte.abrirEInicializar(
-                context,
-                RutaFXML.NUEVA_UBICACION,
-                "Nueva Ubicación",
-                stage,
-                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
-                    nuevaUbicacion[0] = u;
-                    stage.close();
-                }));
-
-        stage.showAndWait();
-        if (nuevaUbicacion[0] != null) {
-            return nuevaUbicacion[0];
-        }
-
-        throw new RuntimeException("Ubicación no establecida.");
     }
+
+    final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
+    final Stage[] stageWrapper = new Stage[1];
+
+    stageWrapper[0] = FXMLSoporte.abrirFormularioUbicacion(
+            context,
+            RutaFXML.NUEVA_UBICACION,
+            "Nueva Ubicación",
+            (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
+                nuevaUbicacion[0] = u;
+                stageWrapper[0].close();
+            }));
+
+    if (stageWrapper[0] == null) {
+        throw new RuntimeException("No se pudo abrir el formulario de nueva ubicación.");
+    }
+
+    stageWrapper[0].showAndWait();
+
+    if (nuevaUbicacion[0] != null) {
+        return nuevaUbicacion[0];
+    }
+
+    throw new RuntimeException("Ubicación no establecida.");
+}
+
 
     public static Consola seleccionarConsolaDesdeVideojuego(Videojuego juego, ConsolaServicio consolaServicio) {
         List<Consola> disponibles = consolaServicio.obtenerTodas();

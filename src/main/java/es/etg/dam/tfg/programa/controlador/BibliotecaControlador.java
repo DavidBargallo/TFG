@@ -56,7 +56,7 @@ public class BibliotecaControlador {
     @FXML
     public void initialize() {
         if (Sesion.haySesionActiva()) {
-            menuCuenta.setText(Sesion.getUsuarioActual().getNombreUsuario());
+            Sesion.nombreUsuario(menuCuenta);
             inicializarCombos();
             mostrarJuegos();
         } else {
@@ -246,6 +246,7 @@ public class BibliotecaControlador {
                 PDFUtils.exportarBiblioteca(juegosUsuario, Sesion.getUsuarioActual().getNombreUsuario(),
                         archivoGuardar);
             } catch (Exception e) {
+                e.printStackTrace();
                 FXMLSoporte.mostrarError("Error al exportar el PDF.");
             }
         }
