@@ -1,6 +1,7 @@
 package es.etg.dam.tfg.programa.controlador;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import es.etg.dam.tfg.programa.JavaFXApp;
 import es.etg.dam.tfg.programa.modelo.*;
 import es.etg.dam.tfg.programa.servicio.*;
@@ -25,6 +26,7 @@ public class WishlistControlador {
     private final VideojuegoServicio videojuegoServicio;
     private final ConsolaServicio consolaServicio;
     private final UbicacionServicio ubicacionServicio;
+    private final CompaniaServicio companiaServicio;
     private final ApplicationContext applicationContext;
 
     @FXML
@@ -110,21 +112,35 @@ public class WishlistControlador {
 
     private void agregarABiblioteca(Videojuego juego, UsuarioVideojuego uv) {
         try {
-            boolean esFisico = preguntarFormatoJuego();
+            boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
             juego.setEsFisico(esFisico);
             if (esFisico) {
-                Ubicacion ubicacion = obtenerUbicacionParaJuegoFisico();
+                Ubicacion ubicacion = FormularioJuegoUtils.obtenerUbicacionParaJuegoFisico(ubicacionServicio,
+                        applicationContext);
                 juego.setUbicacion(ubicacion);
             }
 
             if (juego.getConsolas() == null || juego.getConsolas().isEmpty()) {
-                Consola consola = seleccionarConsolaDesdeJuego(juego);
+                Consola consola = FormularioJuegoUtils.seleccionarConsolaDesdeVideojuego(juego, consolaServicio);
                 juego.setConsolas(Set.of(consola));
             }
 
             videojuegoServicio.guardar(juego);
 
             uv.setEnWishlist(false);
+            try {
+                JsonNode respuesta = rawgApiServicio.buscarJuegos(juego.getNombre(), null, null, null, 1, 1);
+                JsonNode resultados = respuesta.get("results");
+                if (resultados != null && resultados.isArray() && resultados.size() > 0) {
+                    String rawgId = resultados.get(0).get("id").asText();
+                    JsonNode detalle = rawgApiServicio.obtenerJuegoPorId(rawgId);
+
+                    FormularioJuegoUtils.completarCompaniaSiFalta(juego, detalle, companiaServicio, rawgApiServicio);
+                }
+            } catch (Exception ex) {
+                System.out.println("No se pudo completar la compañía: " + ex.getMessage());
+            }
+
             usuarioVideojuegoServicio.agregarVideojuegoAUsuario(uv);
             juegosWishlist.remove(uv);
             paginador = new Paginador<>(juegosWishlist, 5);
@@ -133,67 +149,6 @@ public class WishlistControlador {
         } catch (Exception e) {
             AlertaUtils.mostrarAlerta("Error al agregar el juego: " + e.getMessage());
         }
-    }
-
-    private Consola seleccionarConsolaDesdeJuego(Videojuego juego) {
-        List<Consola> disponibles = consolaServicio.obtenerTodas();
-        if (disponibles.isEmpty()) {
-            throw new RuntimeException("No hay consolas disponibles.");
-        }
-
-        List<String> nombres = disponibles.stream().map(Consola::getNombre).toList();
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(nombres.get(0), nombres);
-        dialog.setTitle("Seleccionar consola");
-        dialog.setHeaderText("Selecciona la consola en la que tienes este juego:");
-        dialog.setContentText("Consola:");
-
-        return dialog.showAndWait()
-                .flatMap(nombre -> disponibles.stream().filter(c -> c.getNombre().equals(nombre)).findFirst())
-                .orElseThrow(() -> new RuntimeException("Consola no seleccionada."));
-    }
-
-    private Ubicacion obtenerUbicacionParaJuegoFisico() {
-        List<Ubicacion> ubicaciones = ubicacionServicio.obtenerTodas();
-
-        if (!ubicaciones.isEmpty()) {
-            ChoiceDialog<Ubicacion> dialog = new ChoiceDialog<>(ubicaciones.get(0), ubicaciones);
-            dialog.setTitle("Seleccionar ubicación");
-            dialog.setHeaderText("Selecciona una ubicación existente o cancela para crear una nueva:");
-            dialog.setContentText("Ubicación:");
-
-            Optional<Ubicacion> resultado = dialog.showAndWait();
-            if (resultado.isPresent()) {
-                return resultado.get();
-            }
-        }
-
-        final Ubicacion[] nuevaUbicacion = new Ubicacion[1];
-        Stage stage = new Stage();
-        FXMLSoporte.abrirEInicializar(
-                applicationContext,
-                RutaFXML.NUEVA_UBICACION,
-                "Nueva Ubicación",
-                stage,
-                (NuevaUbicacionControlador c) -> c.setOnUbicacionGuardada(u -> {
-                    nuevaUbicacion[0] = u;
-                    stage.close();
-                }));
-
-        stage.showAndWait();
-        if (nuevaUbicacion[0] != null) {
-            return nuevaUbicacion[0];
-        }
-
-        throw new RuntimeException("Ubicación no establecida.");
-    }
-
-    private boolean preguntarFormatoJuego() {
-        List<String> opciones = List.of("Físico", "Digital");
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("Físico", opciones);
-        dialog.setTitle("Formato del juego");
-        dialog.setHeaderText("¿Cómo tienes este juego?");
-        dialog.setContentText("Formato:");
-        return dialog.showAndWait().orElseThrow(() -> new RuntimeException("Selección cancelada.")).equals("Físico");
     }
 
     public void paginaAnterior() {

@@ -328,19 +328,20 @@ public class ControladorBusqueda {
                     if (juego.getGeneros() == null || juego.getGeneros().isEmpty()) {
                         juego.setGeneros(obtenerGeneros(temp.json()));
                     }
-                    if (juego.getCompania() == null && temp.json().has("developers")) {
-                        for (JsonNode dev : temp.json().get("developers")) {
-                            if (dev.hasNonNull("name")) {
-                                String nombre = dev.get("name").asText();
-                                Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null,
-                                        null);
-                                if (compania != null) {
-                                    juego.setCompania(compania);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    // if (juego.getCompania() == null && temp.json().has("developers")) {
+                    //     for (JsonNode dev : temp.json().get("developers")) {
+                    //         if (dev.hasNonNull("name")) {
+                    //             String nombre = dev.get("name").asText();
+                    //             Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null,
+                    //                     null);
+                    //             if (compania != null) {
+                    //                 juego.setCompania(compania);
+                    //                 break;
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    FormularioJuegoUtils.completarCompaniaSiFalta(juegoExistente, temp.json(), companiaServicio, rawgApiServicio);
 
                     boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
                     juego.setEsFisico(esFisico);
