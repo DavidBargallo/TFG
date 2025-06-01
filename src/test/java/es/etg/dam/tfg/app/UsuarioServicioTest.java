@@ -32,7 +32,7 @@ public class UsuarioServicioTest {
 
     @Test
     void registrarUsuario_valido_deberiaGuardarUsuario() {
-        System.out.println("🔹 Test: registrarUsuario_valido_deberiaGuardarUsuario");
+        System.out.println("Test: registrarUsuario_valido_deberiaGuardarUsuario");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -47,12 +47,12 @@ public class UsuarioServicioTest {
         Usuario result = usuarioServicio.registrarUsuario(usuario, "P@ssw0rd!");
         assertEquals("hashed", result.getContrasena());
 
-        System.out.println("✅ Registro exitoso confirmado.");
+        System.out.println("Registro exitoso confirmado.");
     }
 
     @Test
     void registrarUsuario_contrasenasNoCoinciden_lanzaExcepcion() {
-        System.out.println("🔹 Test: registrarUsuario_contrasenasNoCoinciden_lanzaExcepcion");
+        System.out.println("Test: registrarUsuario_contrasenasNoCoinciden_lanzaExcepcion");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -62,12 +62,12 @@ public class UsuarioServicioTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> usuarioServicio.registrarUsuario(usuario, "OtraClave123!"));
 
-        System.out.println("✅ Excepción lanzada: " + ex.getMessage());
+        System.out.println("Excepción lanzada: " + ex.getMessage());
     }
 
     @Test
     void registrarUsuario_emailInvalido_lanzaExcepcion() {
-        System.out.println("🔹 Test: registrarUsuario_emailInvalido_lanzaExcepcion");
+        System.out.println("Test: registrarUsuario_emailInvalido_lanzaExcepcion");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -77,12 +77,12 @@ public class UsuarioServicioTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> usuarioServicio.registrarUsuario(usuario, "P@ssw0rd!"));
 
-        System.out.println("✅ Excepción lanzada: " + ex.getMessage());
+        System.out.println("Excepción lanzada: " + ex.getMessage());
     }
 
     @Test
     void registrarUsuario_usuarioYaExiste_lanzaExcepcion() {
-        System.out.println("🔹 Test: registrarUsuario_usuarioYaExiste_lanzaExcepcion");
+        System.out.println("Test: registrarUsuario_usuarioYaExiste_lanzaExcepcion");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -94,12 +94,12 @@ public class UsuarioServicioTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> usuarioServicio.registrarUsuario(usuario, "P@ssw0rd!"));
 
-        System.out.println("✅ Excepción lanzada: " + ex.getMessage());
+        System.out.println("Excepción lanzada: " + ex.getMessage());
     }
 
     @Test
     void validarCredenciales_correctas_devuelveUsuario() {
-        System.out.println("🔹 Test: validarCredenciales_correctas_devuelveUsuario");
+        System.out.println("Test: validarCredenciales_correctas_devuelveUsuario");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -111,12 +111,12 @@ public class UsuarioServicioTest {
         Optional<Usuario> resultado = usuarioServicio.validarCredenciales("david", "P@ssw0rd!");
         assertTrue(resultado.isPresent());
 
-        System.out.println("✅ Login correcto con credenciales válidas.");
+        System.out.println("Login correcto con credenciales válidas.");
     }
 
     @Test
     void validarCredenciales_contrasenaIncorrecta_devuelveVacio() {
-        System.out.println("🔹 Test: validarCredenciales_contrasenaIncorrecta_devuelveVacio");
+        System.out.println("Test: validarCredenciales_contrasenaIncorrecta_devuelveVacio");
 
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario("david");
@@ -128,7 +128,7 @@ public class UsuarioServicioTest {
         Optional<Usuario> resultado = usuarioServicio.validarCredenciales("david", "malaClave");
         assertTrue(resultado.isEmpty());
 
-        System.out.println("✅ Login fallido correctamente detectado.");
+        System.out.println("Login fallido correctamente detectado.");
     }
 }
 
