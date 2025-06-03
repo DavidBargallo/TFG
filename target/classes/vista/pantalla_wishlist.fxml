@@ -17,6 +17,11 @@
                     <MenuItem fx:id="menuVolverBiblioteca" text="Volver a Biblioteca" onAction="#volverABiblioteca"/>
                 </items>
             </Menu>
+            <Menu fx:id="menuWishlist" text="Wishlist">
+                <items>
+                    <MenuItem fx:id="menuExportarWishlist" text="Exportar wishlist" onAction="#exportarWishlistAPDF" />
+                </items>
+            </Menu>
         </menus>
     </MenuBar>
 

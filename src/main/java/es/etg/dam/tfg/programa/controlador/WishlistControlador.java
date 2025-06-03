@@ -10,11 +10,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @Component
@@ -148,6 +152,32 @@ public class WishlistControlador {
             AlertaUtils.mostrarAlerta("Juego agregado a tu biblioteca.");
         } catch (Exception e) {
             AlertaUtils.mostrarAlerta("Error al agregar el juego: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void exportarWishlistAPDF() {
+        if (juegosWishlist == null || juegosWishlist.isEmpty()) {
+            AlertaUtils.mostrarAlerta("No hay juegos en la wishlist para exportar.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Wishlist como PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        File archivo = fileChooser.showSaveDialog(null);
+
+        if (archivo != null) {
+            try {
+                List<Videojuego> juegos = juegosWishlist.stream()
+                        .map(UsuarioVideojuego::getVideojuego)
+                        .toList();
+
+                PDFUtils.exportarWishlist(juegos, Sesion.getUsuarioActual().getNombreUsuario(), archivo);
+                AlertaUtils.mostrarAlerta("Wishlist exportada correctamente.");
+            } catch (IOException e) {
+                FXMLSoporte.mostrarError("Error al exportar la wishlist: " + e.getMessage());
+            }
         }
     }
 

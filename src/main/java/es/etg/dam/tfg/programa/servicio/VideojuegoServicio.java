@@ -75,6 +75,13 @@ public class VideojuegoServicio {
         return videojuegoRepositorio.findByNombreAndFechaLanzamiento(nombre, fechaLanzamiento);
     }
 
+    //
+    public Optional<Videojuego> obtenerConRelacionesPorNombreYFecha(String nombre, LocalDate fechaLanzamiento) {
+        return videojuegoRepositorio.findConRelacionesByNombreAndFecha(nombre, fechaLanzamiento);
+    }
+
+    //
+
     @Transactional(readOnly = true)
     public List<Videojuego> buscarPorNombreConteniendo(String nombre) {
         return videojuegoRepositorio.findByNombreContainingIgnoreCase(nombre);

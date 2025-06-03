@@ -42,6 +42,13 @@ public class UsuarioVideojuegoServicio {
         return usuarioVideojuegoRepositorio.findConVideojuegoCompletoEnWishlist(usuarioId);
     }
 
+    //
+    @Transactional
+    public UsuarioVideojuego guardar(UsuarioVideojuego relacion) {
+        return usuarioVideojuegoRepositorio.save(relacion);
+    }
+    //
+    
     @Transactional
     public void eliminarRelacionUsuarioVideojuego(Integer usuarioId, Integer videojuegoId) {
         UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuarioId, videojuegoId);

@@ -3,7 +3,7 @@ package es.etg.dam.tfg.programa.controlador;
 import com.fasterxml.jackson.databind.JsonNode;
 import es.etg.dam.tfg.programa.modelo.*;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
-import es.etg.dam.tfg.programa.repositorio.*;
+//import es.etg.dam.tfg.programa.repositorio.*;
 import es.etg.dam.tfg.programa.servicio.*;
 import es.etg.dam.tfg.programa.utils.*;
 import javafx.event.ActionEvent;
@@ -28,10 +28,12 @@ public class ControladorBusqueda {
 
     private static final int JUEGOS_POR_PAGINA = 10;
 
-    private final VideojuegoRepositorio videojuegoRepositorio;
-    private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
+    // private final VideojuegoRepositorio videojuegoRepositorio;
+    // private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
     private final RawgApiServicio rawgApiServicio;
-    private final GeneroRepositorio generoRepositorio;
+    // private final GeneroRepositorio generoRepositorio;
+    private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
+    private final GeneroServicio generoServicio;
     private final ConsolaServicio consolaServicio;
     private final VideojuegoServicio videojuegoServicio;
     private final CompaniaServicio companiaServicio;
@@ -262,13 +264,21 @@ public class ControladorBusqueda {
 
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario != null) {
-            Optional<Videojuego> existente = videojuegoRepositorio.findConRelacionesByNombreAndFecha(nombreJuego,
+            // Optional<Videojuego> existente =
+            // videojuegoRepositorio.findConRelacionesByNombreAndFecha(nombreJuego,
+            // fecha);
+            Optional<Videojuego> existente = videojuegoServicio.obtenerConRelacionesPorNombreYFecha(nombreJuego,
                     fecha);
 
-            Optional<UsuarioVideojuego> uvOpt = existente
-                    .map(v -> usuarioVideojuegoRepositorio
-                            .findById(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
-                    .flatMap(v -> v);
+            // Optional<UsuarioVideojuego> uvOpt = existente
+            // .map(v -> usuarioVideojuegoServicio
+            // /*usuarioVideojuegoRepositorio.findById(new
+            // UsuarioVideojuegoID(usuario.getId(), v.getId())))*/
+            // .obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
+            // .flatMap(v -> v);
+
+            Optional<UsuarioVideojuego> uvOpt = existente.flatMap(
+                    v -> usuarioVideojuegoServicio.obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())));
 
             if (uvOpt.isPresent()) {
                 UsuarioVideojuego relacion = uvOpt.get();
@@ -312,7 +322,9 @@ public class ControladorBusqueda {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(temp);
 
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
-                Optional<UsuarioVideojuego> relacionExistente = usuarioVideojuegoRepositorio.findById(id);
+                // Optional<UsuarioVideojuego> relacionExistente =
+                // usuarioVideojuegoRepositorio.findById(id);
+                Optional<UsuarioVideojuego> relacionExistente = usuarioVideojuegoServicio.obtenerVideojuegoPorId(id);
 
                 if (relacionExistente.isPresent()) {
                     UsuarioVideojuego relacion = relacionExistente.get();
@@ -328,7 +340,8 @@ public class ControladorBusqueda {
                     if (juego.getGeneros() == null || juego.getGeneros().isEmpty()) {
                         juego.setGeneros(obtenerGeneros(temp.json()));
                     }
-                    FormularioJuegoUtils.completarCompaniaSiFalta(juegoExistente, temp.json(), companiaServicio, rawgApiServicio);
+                    FormularioJuegoUtils.completarCompaniaSiFalta(juegoExistente, temp.json(), companiaServicio,
+                            rawgApiServicio);
 
                     boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
                     juego.setEsFisico(esFisico);
@@ -340,7 +353,8 @@ public class ControladorBusqueda {
                     videojuegoServicio.guardar(juego);
 
                     relacion.setEnWishlist(false);
-                    usuarioVideojuegoRepositorio.save(relacion);
+                    // usuarioVideojuegoRepositorio.save(relacion);
+                    usuarioVideojuegoServicio.guardar(relacion);
 
                     AlertaUtils.mostrarAlerta("Juego movido de wishlist a tu biblioteca.");
                 } else {
@@ -361,7 +375,8 @@ public class ControladorBusqueda {
                     nuevaRelacion.setVideojuego(juego);
                     nuevaRelacion.setEnWishlist(false);
 
-                    usuarioVideojuegoRepositorio.save(nuevaRelacion);
+                    // usuarioVideojuegoRepositorio.save(nuevaRelacion);
+                    usuarioVideojuegoServicio.guardar(nuevaRelacion);
                     AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
                 }
 
@@ -383,7 +398,9 @@ public class ControladorBusqueda {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoBasico(temp);
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
 
-                Optional<UsuarioVideojuego> existente = usuarioVideojuegoRepositorio.findById(id);
+                // Optional<UsuarioVideojuego> existente =
+                // usuarioVideojuegoRepositorio.findById(id);
+                Optional<UsuarioVideojuego> existente = usuarioVideojuegoServicio.obtenerVideojuegoPorId(id);
 
                 UsuarioVideojuego relacion;
                 if (existente.isPresent()) {
@@ -401,7 +418,8 @@ public class ControladorBusqueda {
                     relacion.setEnWishlist(true);
                 }
 
-                usuarioVideojuegoRepositorio.save(relacion);
+                // usuarioVideojuegoRepositorio.save(relacion);
+                usuarioVideojuegoServicio.guardar(relacion);
 
                 AlertaUtils.mostrarAlerta("¡Juego agregado a tu wishlist!");
                 btn.setVisible(false);
@@ -415,8 +433,9 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoBasico(VideojuegoTemp temp) {
-        Optional<Videojuego> existente = videojuegoRepositorio.findByNombreAndFechaLanzamiento(temp.nombre(),
-                temp.fecha());
+        Optional<Videojuego> existente = /* videojuegoRepositorio.findByNombreAndFechaLanzamiento */videojuegoServicio
+                .obtenerPorNombreYFechaLanzamiento(temp.nombre(),
+                        temp.fecha());
         if (existente.isPresent())
             return existente.get();
 
@@ -444,8 +463,16 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
-        Optional<Videojuego> existente = videojuegoRepositorio
-                .findConRelacionesByNombreAndFecha(temp.nombre(), temp.fecha());
+        /*
+         * Optional<Videojuego> existente = videojuegoRepositorio
+         * .findConRelacionesByNombreAndFecha(temp.nombre(), temp.fecha());
+         * if (existente.isPresent()) {
+         * return existente.get();
+         * }
+         */
+
+        Optional<Videojuego> existente = videojuegoServicio
+                .obtenerConRelacionesPorNombreYFecha(temp.nombre(), temp.fecha());
         if (existente.isPresent()) {
             return existente.get();
         }
@@ -457,7 +484,7 @@ public class ControladorBusqueda {
         v.setEsFisico(false);
 
         v.setGeneros(obtenerGeneros(temp.json()));
-        
+
         try {
             JsonNode juegoCompleto = rawgApiServicio
                     .consumirApi("https://api.rawg.io/api/games/" + temp.json().get("id").asInt());
@@ -486,7 +513,8 @@ public class ControladorBusqueda {
         if (json.has("genres")) {
             json.get("genres").forEach(node -> {
                 String nombre = node.get("name").asText();
-                generoRepositorio.findByNombre(nombre).ifPresent(generos::add);
+                /* generoRepositorio.findByNombre(nombre).ifPresent(generos::add); */
+                generoServicio.obtenerPorNombre(nombre).ifPresent(generos::add);
             });
         }
         return generos;
