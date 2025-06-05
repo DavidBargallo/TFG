@@ -61,11 +61,11 @@ public class WishlistControlador {
 
     private void mostrarPagina() {
         contenedorWishlist.getChildren().clear();
-        lblPagina.setText("Página " + paginador.getPaginaActualNumero());
+        lblPagina.setText(Mensajes.PAGINA + paginador.getPaginaActualNumero());
 
         for (UsuarioVideojuego uv : paginador.getPaginaActual()) {
             VBox tarjeta = new VBox(10);
-            tarjeta.setStyle("-fx-border-color: #ccc; -fx-padding: 10;");
+            tarjeta.setStyle(Mensajes.ESTILO_TARJETA);
             Videojuego juego = uv.getVideojuego();
 
             ImageView img = new ImageView();
@@ -74,23 +74,23 @@ public class WishlistControlador {
             ImagenUtils.cargarImagen(img, juego.getPortadaUrl());
 
             Label lblNombre = new Label(juego.getNombre());
-            lblNombre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+            lblNombre.setStyle(Mensajes.ESTILO_NOMBRE_WISHLIST);
 
             VBox tiendasBox = new VBox(5);
-            tiendasBox.getChildren().add(new Label("Tiendas disponibles:"));
+            tiendasBox.getChildren().add(new Label(Mensajes.TIENDAS_DISPONIBLES));
             try {
                 JsonNode infoJuego = rawgApiServicio.buscarJuegos(juego.getNombre(), null, null, null, 1, 1);
-                JsonNode resultados = infoJuego.get("results");
+                JsonNode resultados = infoJuego.get(Mensajes.API_RESULTADOS);
                 if (resultados != null && resultados.isArray() && resultados.size() > 0) {
-                    String id = resultados.get(0).get("id").asText();
+                    String id = resultados.get(0).get(Mensajes.API_ID).asText();
                     JsonNode detalle = rawgApiServicio.obtenerJuegoPorId(id);
-                    JsonNode tiendas = detalle.get("stores");
+                    JsonNode tiendas = detalle.get(Mensajes.API_STORES);
 
                     if (tiendas != null && tiendas.isArray()) {
                         for (JsonNode tienda : tiendas) {
-                            String nombreTienda = tienda.get("store").get("name").asText();
-                            String dominio = tienda.get("store").get("domain").asText();
-                            String url = "https://" + dominio;
+                            String nombreTienda = tienda.get(Mensajes.API_STORE).get(Mensajes.API_NOMBRE).asText();
+                            String dominio = tienda.get(Mensajes.API_STORE).get(Mensajes.API_DOMINIO).asText();
+                            String url = Mensajes.API_HTTPS + dominio;
 
                             Hyperlink enlace = new Hyperlink(nombreTienda);
                             enlace.setOnAction(e -> getHostServices().showDocument(url));
@@ -100,10 +100,10 @@ public class WishlistControlador {
                     }
                 }
             } catch (Exception e) {
-                tiendasBox.getChildren().add(new Label("No se pudo cargar tiendas."));
+                tiendasBox.getChildren().add(new Label(Mensajes.ERROR_TIENDA));
             }
 
-            Button btnAgregar = new Button("Agregar a Biblioteca");
+            Button btnAgregar = new Button(Mensajes.AGREGAR_BIBLIOTECA);
             btnAgregar.setOnAction(e -> agregarABiblioteca(juego, uv));
 
             tarjeta.getChildren().addAll(img, lblNombre, tiendasBox, btnAgregar);
@@ -134,37 +134,37 @@ public class WishlistControlador {
             uv.setEnWishlist(false);
             try {
                 JsonNode respuesta = rawgApiServicio.buscarJuegos(juego.getNombre(), null, null, null, 1, 1);
-                JsonNode resultados = respuesta.get("results");
+                JsonNode resultados = respuesta.get(Mensajes.API_RESULTADOS);
                 if (resultados != null && resultados.isArray() && resultados.size() > 0) {
-                    String rawgId = resultados.get(0).get("id").asText();
+                    String rawgId = resultados.get(0).get(Mensajes.API_ID).asText();
                     JsonNode detalle = rawgApiServicio.obtenerJuegoPorId(rawgId);
 
                     FormularioJuegoUtils.completarCompaniaSiFalta(juego, detalle, companiaServicio, rawgApiServicio);
                 }
             } catch (Exception ex) {
-                System.out.println("No se pudo completar la compañía: " + ex.getMessage());
+                System.out.println(Mensajes.ERROR_COMPANIA + ex.getMessage());
             }
 
             usuarioVideojuegoServicio.agregarVideojuegoAUsuario(uv);
             juegosWishlist.remove(uv);
             paginador = new Paginador<>(juegosWishlist, 5);
             mostrarPagina();
-            AlertaUtils.mostrarAlerta("Juego agregado a tu biblioteca.");
+            AlertaUtils.mostrarAlerta(Mensajes.JUEGO_AGREGADO_BIBLIOTECA);
         } catch (Exception e) {
-            AlertaUtils.mostrarAlerta("Error al agregar el juego: " + e.getMessage());
+            AlertaUtils.mostrarAlerta(Mensajes.ERROR_AGREGAR_JUEGO + e.getMessage());
         }
     }
 
     @FXML
     private void exportarWishlistAPDF() {
         if (juegosWishlist == null || juegosWishlist.isEmpty()) {
-            AlertaUtils.mostrarAlerta("No hay juegos en la wishlist para exportar.");
+            AlertaUtils.mostrarAlerta(Mensajes.WISHLIST_VACIA);
             return;
         }
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Wishlist como PDF");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        fileChooser.setTitle(Mensajes.GUARDAR_WISHLIST_PDF);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(Mensajes.DESCRIPCION_PDF, Mensajes.EXTENSION_PDF));
         File archivo = fileChooser.showSaveDialog(null);
 
         if (archivo != null) {
@@ -174,9 +174,9 @@ public class WishlistControlador {
                         .toList();
 
                 PDFUtils.exportarWishlist(juegos, Sesion.getUsuarioActual().getNombreUsuario(), archivo);
-                AlertaUtils.mostrarAlerta("Wishlist exportada correctamente.");
+                AlertaUtils.mostrarAlerta(Mensajes.WISHLIST_EXPORTADA);
             } catch (IOException e) {
-                FXMLSoporte.mostrarError("Error al exportar la wishlist: " + e.getMessage());
+                FXMLSoporte.mostrarError(Mensajes.ERROR_EXPORTAR_WISHLIST + e.getMessage());
             }
         }
     }

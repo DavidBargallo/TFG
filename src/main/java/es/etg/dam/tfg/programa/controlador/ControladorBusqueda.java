@@ -3,7 +3,6 @@ package es.etg.dam.tfg.programa.controlador;
 import com.fasterxml.jackson.databind.JsonNode;
 import es.etg.dam.tfg.programa.modelo.*;
 import es.etg.dam.tfg.programa.modelo.ids.UsuarioVideojuegoID;
-//import es.etg.dam.tfg.programa.repositorio.*;
 import es.etg.dam.tfg.programa.servicio.*;
 import es.etg.dam.tfg.programa.utils.*;
 import javafx.event.ActionEvent;
@@ -27,11 +26,7 @@ import java.util.*;
 public class ControladorBusqueda {
 
     private static final int JUEGOS_POR_PAGINA = 10;
-
-    // private final VideojuegoRepositorio videojuegoRepositorio;
-    // private final UsuarioVideojuegoRepositorio usuarioVideojuegoRepositorio;
     private final RawgApiServicio rawgApiServicio;
-    // private final GeneroRepositorio generoRepositorio;
     private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final GeneroServicio generoServicio;
     private final ConsolaServicio consolaServicio;
@@ -70,7 +65,7 @@ public class ControladorBusqueda {
         cargarPlataformas();
         cargarGeneros();
 
-        comboOrdenApi.getItems().addAll("Ninguno", "Fecha más reciente", "Fecha más antigua");
+        comboOrdenApi.getItems().addAll(Mensajes.NINGUNO, Mensajes.FILTRO_BIBLIOTECA_RECIENTE, Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
         comboOrdenApi.getSelectionModel().selectFirst();
 
         btnBuscarApi.setOnAction(this::buscarJuegos);
@@ -78,39 +73,39 @@ public class ControladorBusqueda {
 
     private void cargarPlataformas() {
         try {
-            JsonNode plataformas = rawgApiServicio.consumirApi("https://api.rawg.io/api/platforms").get("results");
+            JsonNode plataformas = rawgApiServicio.consumirApi(Mensajes.ENLACE_PLATAFORMAS).get(Mensajes.API_RESULTADOS);
             comboConsolaApi.getItems().clear();
-            comboConsolaApi.getItems().add("Todas");
+            comboConsolaApi.getItems().add(Mensajes.TODAS);
 
             plataformas.forEach(p -> {
-                String nombre = p.get("name").asText();
-                int id = p.get("id").asInt();
+                String nombre = p.get(Mensajes.API_NOMBRE).asText();
+                int id = p.get(Mensajes.API_ID).asInt();
                 comboConsolaApi.getItems().add(nombre);
                 mapaConsolas.put(nombre, id);
             });
 
             comboConsolaApi.getSelectionModel().selectFirst();
         } catch (Exception e) {
-            AlertaUtils.mostrarAlerta("Error al cargar plataformas.");
+            AlertaUtils.mostrarAlerta(Mensajes.ERROR_CARGAR_PLATAFORMAS);
         }
     }
 
     private void cargarGeneros() {
         try {
-            JsonNode generos = rawgApiServicio.consumirApi("https://api.rawg.io/api/genres").get("results");
+            JsonNode generos = rawgApiServicio.consumirApi(Mensajes.ENLACE_GENEROS).get(Mensajes.API_RESULTADOS);
             comboGeneroApi.getItems().clear();
-            comboGeneroApi.getItems().add("Todos");
+            comboGeneroApi.getItems().add(Mensajes.TODOS);
 
             generos.forEach(g -> {
-                String nombre = g.get("name").asText();
-                int id = g.get("id").asInt();
+                String nombre = g.get(Mensajes.API_NOMBRE).asText();
+                int id = g.get(Mensajes.API_ID).asInt();
                 comboGeneroApi.getItems().add(nombre);
                 mapaGeneros.put(nombre, id);
             });
 
             comboGeneroApi.getSelectionModel().selectFirst();
         } catch (Exception e) {
-            AlertaUtils.mostrarAlerta("Error al cargar géneros.");
+            AlertaUtils.mostrarAlerta(Mensajes.ERROR_CARGAR_GENEROS);
         }
     }
 
@@ -125,15 +120,15 @@ public class ControladorBusqueda {
         String consolaSeleccionada = comboConsolaApi.getValue();
         String ordenSeleccionado = comboOrdenApi.getValue();
 
-        Integer generoId = "Todos".equals(generoSeleccionado) ? null : mapaGeneros.get(generoSeleccionado);
-        Integer plataformaId = "Todas".equals(consolaSeleccionada) ? null : mapaConsolas.get(consolaSeleccionada);
-        String ordenFinal = "Ninguno".equals(ordenSeleccionado) ? null : ordenSeleccionado;
+        Integer generoId = Mensajes.TODOS.equals(generoSeleccionado) ? null : mapaGeneros.get(generoSeleccionado);
+        Integer plataformaId = Mensajes.TODAS.equals(consolaSeleccionada) ? null : mapaConsolas.get(consolaSeleccionada);
+        String ordenFinal = Mensajes.NINGUNO.equals(ordenSeleccionado) ? null : ordenSeleccionado;
 
         try {
             JsonNode respuesta = rawgApiServicio.buscarJuegos(nombre, generoId, plataformaId, ordenFinal,
                     paginaActualApi, JUEGOS_POR_PAGINA);
 
-            JsonNode juegos = respuesta.get("results");
+            JsonNode juegos = respuesta.get(Mensajes.API_RESULTADOS);
             contenedorResultadosApi.getChildren().clear();
 
             if (juegos != null && juegos.isArray() && juegos.size() > 0) {
@@ -141,10 +136,10 @@ public class ControladorBusqueda {
                 juegos.forEach(listaJuegos::add);
 
                 listaJuegos.removeIf(juego -> {
-                    if (!"Todas".equals(consolaSeleccionada) && !tienePlataforma(juego, consolaSeleccionada)) {
+                    if (!Mensajes.TODAS.equals(consolaSeleccionada) && !tienePlataforma(juego, consolaSeleccionada)) {
                         return true;
                     }
-                    if (!"Todos".equals(generoSeleccionado) && !tieneGenero(juego, generoSeleccionado)) {
+                    if (!Mensajes.TODOS.equals(generoSeleccionado) && !tieneGenero(juego, generoSeleccionado)) {
                         return true;
                     }
                     return false;
@@ -152,12 +147,12 @@ public class ControladorBusqueda {
 
                 listaJuegos.sort(
                         Comparator
-                                .comparing((JsonNode j) -> !j.get("name").asText().toLowerCase().contains(nombre))
+                                .comparing((JsonNode j) -> !j.get(Mensajes.API_NOMBRE).asText().toLowerCase().contains(nombre))
 
                                 .thenComparing((JsonNode j1, JsonNode j2) -> {
-                                    if ("Fecha más reciente".equals(ordenSeleccionado)) {
+                                    if (Mensajes.FILTRO_BIBLIOTECA_RECIENTE.equals(ordenSeleccionado)) {
                                         return extraerFecha(j2).compareTo(extraerFecha(j1));
-                                    } else if ("Fecha más antigua".equals(ordenSeleccionado)) {
+                                    } else if (Mensajes.FILTRO_BIBLIOTECA_ANTIGUA.equals(ordenSeleccionado)) {
                                         return extraerFecha(j1).compareTo(extraerFecha(j2));
                                     }
                                     return 0;
@@ -165,33 +160,33 @@ public class ControladorBusqueda {
 
                 if (listaJuegos.isEmpty()) {
                     contenedorResultadosApi.getChildren()
-                            .add(new Label("No se encontraron juegos con los filtros aplicados."));
+                            .add(new Label(Mensajes.SIN_RESULTADOS));
                 } else {
                     listaJuegos.forEach(j -> contenedorResultadosApi.getChildren().add(crearFichaJuego(j)));
                 }
 
             } else {
                 contenedorResultadosApi.getChildren()
-                        .add(new Label("No se encontraron juegos con los filtros aplicados."));
+                        .add(new Label(Mensajes.SIN_RESULTADOS));
             }
 
-            lblPaginaApi.setText("Página " + paginaActualApi);
+            lblPaginaApi.setText(Mensajes.PAGINA + paginaActualApi);
             btnAnteriorApi.setDisable(paginaActualApi == 1);
-            btnSiguienteApi.setDisable(!respuesta.has("next") || respuesta.get("next").isNull());
+            btnSiguienteApi.setDisable(!respuesta.has(Mensajes.API_SIGUIENTE) || respuesta.get(Mensajes.API_SIGUIENTE).isNull());
 
         } catch (IOException | InterruptedException e) {
-            AlertaUtils.mostrarAlerta("Error al cargar resultados: " + e.getMessage());
+            AlertaUtils.mostrarAlerta(Mensajes.ERROR_CARGAR_RESULTADOS + e.getMessage());
         }
     }
 
     private boolean tieneGenero(JsonNode juego, String generoSeleccionado) {
-        if (generoSeleccionado == null || generoSeleccionado.equals("Todos"))
+        if (generoSeleccionado == null || generoSeleccionado.equals(Mensajes.TODOS))
             return true;
-        if (!juego.has("genres"))
+        if (!juego.has(Mensajes.API_GENEROS))
             return false;
 
-        for (JsonNode gen : juego.get("genres")) {
-            String nombre = gen.get("name").asText();
+        for (JsonNode gen : juego.get(Mensajes.API_GENEROS)) {
+            String nombre = gen.get(Mensajes.API_NOMBRE).asText();
             if (generoSeleccionado.equalsIgnoreCase(nombre))
                 return true;
         }
@@ -199,13 +194,13 @@ public class ControladorBusqueda {
     }
 
     private boolean tienePlataforma(JsonNode juego, String consolaSeleccionada) {
-        if (consolaSeleccionada == null || consolaSeleccionada.equals("Todas"))
+        if (consolaSeleccionada == null || consolaSeleccionada.equals(Mensajes.TODAS))
             return false;
-        if (!juego.has("platforms"))
+        if (!juego.has(Mensajes.API_PLATAFORMAS))
             return false;
 
-        for (JsonNode plat : juego.get("platforms")) {
-            String nombre = plat.get("platform").get("name").asText();
+        for (JsonNode plat : juego.get(Mensajes.API_PLATAFORMAS)) {
+            String nombre = plat.get(Mensajes.API_PLATAFORMA).get(Mensajes.API_NOMBRE).asText();
             if (consolaSeleccionada.equalsIgnoreCase(nombre))
                 return true;
         }
@@ -213,9 +208,9 @@ public class ControladorBusqueda {
     }
 
     private LocalDate extraerFecha(JsonNode juego) {
-        if (juego.hasNonNull("released")) {
+        if (juego.hasNonNull(Mensajes.API_LANZADO)) {
             try {
-                return LocalDate.parse(juego.get("released").asText());
+                return LocalDate.parse(juego.get(Mensajes.API_LANZADO).asText());
             } catch (Exception e) {
                 return LocalDate.of(1900, 1, 1);
             }
@@ -242,40 +237,30 @@ public class ControladorBusqueda {
         FXMLSoporte.abrirEInicializar(
                 applicationContext,
                 RutaFXML.BIBLIOTECA,
-                "Biblioteca",
+                Mensajes.TITULO_BIBLIOTECA,
                 actual,
                 BibliotecaControlador::inicializarBiblioteca);
     }
 
     private HBox crearFichaJuego(JsonNode juegoJson) {
-        String nombreJuego = juegoJson.get("name").asText();
-        String imagenUrl = juegoJson.hasNonNull("background_image")
-                ? juegoJson.get("background_image").asText()
+        String nombreJuego = juegoJson.get(Mensajes.API_NOMBRE).asText();
+        String imagenUrl = juegoJson.hasNonNull(Mensajes.API_IMAGEN)
+                ? juegoJson.get(Mensajes.API_IMAGEN).asText()
                 : null;
-        LocalDate fecha = juegoJson.hasNonNull("released")
-                ? LocalDate.parse(juegoJson.get("released").asText())
+        LocalDate fecha = juegoJson.hasNonNull(Mensajes.API_LANZADO)
+                ? LocalDate.parse(juegoJson.get(Mensajes.API_LANZADO).asText())
                 : LocalDate.of(1900, 1, 1);
 
         Image imagen = crearImagen(imagenUrl);
         ImageView imageView = new ImageView(imagen);
         HBox hBox = new HBox(10);
-        hBox.setStyle("-fx-border-color: #ccc; -fx-padding: 10;");
+        hBox.setStyle(Mensajes.ESTILO_TARJETA);
         hBox.getChildren().addAll(imageView, new Label(nombreJuego));
 
         Usuario usuario = Sesion.getUsuarioActual();
         if (usuario != null) {
-            // Optional<Videojuego> existente =
-            // videojuegoRepositorio.findConRelacionesByNombreAndFecha(nombreJuego,
-            // fecha);
             Optional<Videojuego> existente = videojuegoServicio.obtenerConRelacionesPorNombreYFecha(nombreJuego,
                     fecha);
-
-            // Optional<UsuarioVideojuego> uvOpt = existente
-            // .map(v -> usuarioVideojuegoServicio
-            // /*usuarioVideojuegoRepositorio.findById(new
-            // UsuarioVideojuegoID(usuario.getId(), v.getId())))*/
-            // .obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())))
-            // .flatMap(v -> v);
 
             Optional<UsuarioVideojuego> uvOpt = existente.flatMap(
                     v -> usuarioVideojuegoServicio.obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())));
@@ -308,28 +293,26 @@ public class ControladorBusqueda {
         try {
             return (url != null && !url.isBlank())
                     ? new Image(url, 120, 80, true, true)
-                    : new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
+                    : new Image(getClass().getResource(RutaFXML.PLACEHOLDER).toExternalForm(), 120, 80, true, true);
         } catch (Exception e) {
-            return new Image(getClass().getResource("/fotos/placeholder.png").toExternalForm(), 120, 80, true, true);
+            return new Image(getClass().getResource(RutaFXML.PLACEHOLDER).toExternalForm(), 120, 80, true, true);
         }
     }
 
     private Button crearBotonAgregar(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
-        Button btn = new Button("Agregar a biblioteca");
+        Button btn = new Button(Mensajes.AGREGAR_BIBLIOTECA);
 
         btn.setOnAction(e -> {
             try {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoDesdeApi(temp);
 
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
-                // Optional<UsuarioVideojuego> relacionExistente =
-                // usuarioVideojuegoRepositorio.findById(id);
                 Optional<UsuarioVideojuego> relacionExistente = usuarioVideojuegoServicio.obtenerVideojuegoPorId(id);
 
                 if (relacionExistente.isPresent()) {
                     UsuarioVideojuego relacion = relacionExistente.get();
                     if (!relacion.isEnWishlist()) {
-                        AlertaUtils.mostrarAlerta("El juego ya está en tu biblioteca.");
+                        AlertaUtils.mostrarAlerta(Mensajes.JUEGO_YA_EN_BIBLIOTECA);
                         return;
                     }
 
@@ -353,10 +336,9 @@ public class ControladorBusqueda {
                     videojuegoServicio.guardar(juego);
 
                     relacion.setEnWishlist(false);
-                    // usuarioVideojuegoRepositorio.save(relacion);
                     usuarioVideojuegoServicio.guardar(relacion);
 
-                    AlertaUtils.mostrarAlerta("Juego movido de wishlist a tu biblioteca.");
+                    AlertaUtils.mostrarAlerta(Mensajes.JUEGO_MOVIDO_BIBLIOTECA);
                 } else {
                     boolean esFisico = FormularioJuegoUtils.preguntarFormatoJuego();
                     juego.setEsFisico(esFisico);
@@ -375,15 +357,14 @@ public class ControladorBusqueda {
                     nuevaRelacion.setVideojuego(juego);
                     nuevaRelacion.setEnWishlist(false);
 
-                    // usuarioVideojuegoRepositorio.save(nuevaRelacion);
                     usuarioVideojuegoServicio.guardar(nuevaRelacion);
-                    AlertaUtils.mostrarAlerta("¡Juego agregado a tu biblioteca!");
+                    AlertaUtils.mostrarAlerta(Mensajes.JUEGO_AGREGADO_BIBLIOTECA);
                 }
 
                 btn.setVisible(false);
 
             } catch (Exception ex) {
-                AlertaUtils.mostrarAlerta("Error al agregar el juego: " + ex.getMessage());
+                AlertaUtils.mostrarAlerta(Mensajes.ERROR_AGREGAR_JUEGO + ex.getMessage());
             }
         });
 
@@ -391,22 +372,20 @@ public class ControladorBusqueda {
     }
 
     private Button crearBotonWishlist(Usuario usuario, Videojuego juegoExistente, VideojuegoTemp temp) {
-        Button btn = new Button("Agregar a wishlist");
+        Button btn = new Button(Mensajes.AGREGAR_WISHLIST);
 
         btn.setOnAction(e -> {
             try {
                 Videojuego juego = (juegoExistente != null) ? juegoExistente : crearVideojuegoBasico(temp);
                 UsuarioVideojuegoID id = new UsuarioVideojuegoID(usuario.getId(), juego.getId());
 
-                // Optional<UsuarioVideojuego> existente =
-                // usuarioVideojuegoRepositorio.findById(id);
                 Optional<UsuarioVideojuego> existente = usuarioVideojuegoServicio.obtenerVideojuegoPorId(id);
 
                 UsuarioVideojuego relacion;
                 if (existente.isPresent()) {
                     relacion = existente.get();
                     if (relacion.isEnWishlist()) {
-                        AlertaUtils.mostrarAlerta("El juego ya está en tu wishlist.");
+                        AlertaUtils.mostrarAlerta(Mensajes.JUEGO_YA_EN_WISHLIST);
                         return;
                     }
                     relacion.setEnWishlist(true);
@@ -418,14 +397,13 @@ public class ControladorBusqueda {
                     relacion.setEnWishlist(true);
                 }
 
-                // usuarioVideojuegoRepositorio.save(relacion);
                 usuarioVideojuegoServicio.guardar(relacion);
 
-                AlertaUtils.mostrarAlerta("¡Juego agregado a tu wishlist!");
+                AlertaUtils.mostrarAlerta(Mensajes.JUEGO_AGREGADO_WISHLIST);
                 btn.setVisible(false);
 
             } catch (Exception ex) {
-                AlertaUtils.mostrarAlerta("Error al agregar a wishlist: " + ex.getMessage());
+                AlertaUtils.mostrarAlerta(Mensajes.ERROR_AGREGAR_WISHLIST + ex.getMessage());
             }
         });
 
@@ -433,7 +411,7 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoBasico(VideojuegoTemp temp) {
-        Optional<Videojuego> existente = /* videojuegoRepositorio.findByNombreAndFechaLanzamiento */videojuegoServicio
+        Optional<Videojuego> existente = videojuegoServicio
                 .obtenerPorNombreYFechaLanzamiento(temp.nombre(),
                         temp.fecha());
         if (existente.isPresent())
@@ -447,11 +425,11 @@ public class ControladorBusqueda {
 
         v.setGeneros(obtenerGeneros(temp.json()));
 
-        if (temp.json().has("developers") && temp.json().get("developers").isArray()) {
-            for (JsonNode dev : temp.json().get("developers")) {
-                if (dev.hasNonNull("name")) {
-                    String nombre = dev.get("name").asText();
-                    Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null, null);
+        if (temp.json().has(Mensajes.API_DESARROLLADORES) && temp.json().get(Mensajes.API_DESARROLLADORES).isArray()) {
+            for (JsonNode dev : temp.json().get(Mensajes.API_DESARROLLADORES)) {
+                if (dev.hasNonNull(Mensajes.API_NOMBRE)) {
+                    String nombre = dev.get(Mensajes.API_NOMBRE).asText();
+                    Compania compania = companiaServicio.guardarSiNoExiste(nombre, Mensajes.VACIO, null, null);
                     if (compania != null) {
                         v.setCompania(compania);
                         break;
@@ -463,14 +441,6 @@ public class ControladorBusqueda {
     }
 
     private Videojuego crearVideojuegoDesdeApi(VideojuegoTemp temp) {
-        /*
-         * Optional<Videojuego> existente = videojuegoRepositorio
-         * .findConRelacionesByNombreAndFecha(temp.nombre(), temp.fecha());
-         * if (existente.isPresent()) {
-         * return existente.get();
-         * }
-         */
-
         Optional<Videojuego> existente = videojuegoServicio
                 .obtenerConRelacionesPorNombreYFecha(temp.nombre(), temp.fecha());
         if (existente.isPresent()) {
@@ -487,13 +457,13 @@ public class ControladorBusqueda {
 
         try {
             JsonNode juegoCompleto = rawgApiServicio
-                    .consumirApi("https://api.rawg.io/api/games/" + temp.json().get("id").asInt());
+                    .consumirApi(Mensajes.ENLACE_JUEGOS + temp.json().get(Mensajes.API_ID).asInt());
 
-            if (juegoCompleto.has("developers") && juegoCompleto.get("developers").isArray()) {
-                for (JsonNode dev : juegoCompleto.get("developers")) {
-                    if (dev.hasNonNull("name")) {
-                        String nombre = dev.get("name").asText();
-                        Compania compania = companiaServicio.guardarSiNoExiste(nombre, "Desconocido", null, null);
+            if (juegoCompleto.has(Mensajes.API_DESARROLLADORES) && juegoCompleto.get(Mensajes.API_DESARROLLADORES).isArray()) {
+                for (JsonNode dev : juegoCompleto.get(Mensajes.API_DESARROLLADORES)) {
+                    if (dev.hasNonNull(Mensajes.API_NOMBRE)) {
+                        String nombre = dev.get(Mensajes.API_NOMBRE).asText();
+                        Compania compania = companiaServicio.guardarSiNoExiste(nombre, Mensajes.VACIO, null, null);
                         if (compania != null) {
                             v.setCompania(compania);
                             break;
@@ -502,7 +472,7 @@ public class ControladorBusqueda {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error al obtener información detallada del juego: " + e.getMessage());
+            System.out.println(Mensajes.ERROR_INFORMACION_DETALLADA + e.getMessage());
         }
 
         return videojuegoServicio.guardar(v);
@@ -510,10 +480,9 @@ public class ControladorBusqueda {
 
     private Set<Genero> obtenerGeneros(JsonNode json) {
         Set<Genero> generos = new HashSet<>();
-        if (json.has("genres")) {
-            json.get("genres").forEach(node -> {
-                String nombre = node.get("name").asText();
-                /* generoRepositorio.findByNombre(nombre).ifPresent(generos::add); */
+        if (json.has(Mensajes.API_GENEROS)) {
+            json.get(Mensajes.API_GENEROS).forEach(node -> {
+                String nombre = node.get(Mensajes.API_NOMBRE).asText();
                 generoServicio.obtenerPorNombre(nombre).ifPresent(generos::add);
             });
         }

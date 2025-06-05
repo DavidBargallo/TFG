@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import es.etg.dam.tfg.programa.modelo.Videojuego;
 import es.etg.dam.tfg.programa.utils.ImagenUtils;
+import es.etg.dam.tfg.programa.utils.Mensajes;
 import es.etg.dam.tfg.programa.utils.TextoUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -30,13 +31,13 @@ public class FichaJuegoControlador {
         if (juego == null) return;
 
         lblNombre.setText(juego.getNombre());
-        lblFecha.setText("Fecha: " + juego.getFechaLanzamiento());
-        lblEmpresa.setText("Empresa: " + 
-            (juego.getCompania() != null ? juego.getCompania().getNombre() : "N/A"));
-        lblGeneros.setText("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
-        lblConsolas.setText("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
-        lblFisico.setText("Formato: " + (juego.isEsFisico() ? "Físico" : "Digital"));
-        lblUbicacion.setText("Ubicación: " + (null != juego.getUbicacion() ? juego.getUbicacion().getLugar() + "," + juego.getUbicacion().getZona() : "N/A"));
+        lblFecha.setText(Mensajes.FECHA + juego.getFechaLanzamiento());
+        lblEmpresa.setText(Mensajes.EMPRESA + 
+            (juego.getCompania() != null ? juego.getCompania().getNombre() : Mensajes.VACIO));
+        lblGeneros.setText(Mensajes.GENERO + TextoUtils.obtenerNombres(juego.getGeneros()));
+        lblConsolas.setText(Mensajes.CONSOLA + TextoUtils.obtenerNombres(juego.getConsolas()));
+        lblFisico.setText(Mensajes.FORMATO + (juego.isEsFisico() ? Mensajes.FORMATO_FISICO : Mensajes.FORMATO_DIGITAL));
+        lblUbicacion.setText(Mensajes.UBICACION + (null != juego.getUbicacion() ? juego.getUbicacion().getLugar() + "," + juego.getUbicacion().getZona() : "N/A"));
         ImagenUtils.cargarImagen(imgPortada, juego.getPortadaUrl());
     }
 

@@ -3,6 +3,7 @@ package es.etg.dam.tfg.programa.controlador;
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.servicio.UsuarioServicio;
 import es.etg.dam.tfg.programa.utils.FXMLSoporte;
+import es.etg.dam.tfg.programa.utils.Mensajes;
 import es.etg.dam.tfg.programa.utils.RutaFXML;
 import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.event.ActionEvent;
@@ -10,8 +11,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +20,6 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class LogInControlador {
-
-    private static final Logger logger = LoggerFactory.getLogger(LogInControlador.class);
 
     @FXML
     private TextField txtUsuario;
@@ -43,7 +40,7 @@ public class LogInControlador {
         String contrasena = txtContrasena.getText().trim();
 
         if (nombreUsuario.isBlank() || contrasena.isBlank()) {
-            mostrarError("Debes introducir usuario y contraseña.");
+            mostrarError(Mensajes.LOGIN_CAMPOS_VACIOS);
             return;
         }
 
@@ -57,21 +54,20 @@ public class LogInControlador {
                     Sesion.iniciarSesion(usuario);
                     abrirPantallaPrincipal(event);
                 } else {
-                    mostrarError("Usuario o contraseña incorrectos.");
+                    mostrarError(Mensajes.LOGIN_CREDENCIALES_INVALIDAS);
                 }
             } else {
-                mostrarError("Usuario o contraseña incorrectos.");
+                mostrarError(Mensajes.LOGIN_CREDENCIALES_INVALIDAS);
             }
         } catch (Exception e) {
-            logger.error("Error al iniciar sesión", e);
-            mostrarError("Error al iniciar sesión: " + e.getMessage());
+            mostrarError(Mensajes.LOGIN_ERROR_GENERAL + e.getMessage());
         }
     }
 
     @FXML
     public void abrirRegistro(ActionEvent event) {
         Stage stage = (Stage) txtUsuario.getScene().getWindow();
-        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.REGISTRO, "Registro de Usuario", stage);
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.REGISTRO, Mensajes.TITULO_REGISTRO, stage);
     }
 
     private void abrirPantallaPrincipal(ActionEvent event) {
@@ -80,7 +76,7 @@ public class LogInControlador {
         FXMLSoporte.abrirEInicializar(
                 applicationContext,
                 RutaFXML.BIBLIOTECA,
-                "Mi Biblioteca de Juegos",
+                Mensajes.TITULO_BIBLIOTECA,
                 stageActual,
                 (BibliotecaControlador controlador) -> controlador.inicializarBiblioteca()
         );

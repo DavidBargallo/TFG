@@ -3,6 +3,7 @@ package es.etg.dam.tfg.programa.controlador;
 import es.etg.dam.tfg.programa.modelo.UsuarioVideojuego;
 import es.etg.dam.tfg.programa.servicio.UsuarioVideojuegoServicio;
 import es.etg.dam.tfg.programa.utils.FXMLSoporte;
+import es.etg.dam.tfg.programa.utils.Mensajes;
 import es.etg.dam.tfg.programa.utils.RutaFXML;
 import es.etg.dam.tfg.programa.utils.Sesion;
 import javafx.fxml.FXML;
@@ -56,10 +57,11 @@ public class EstadisticasControlador {
                                 .toList();
 
                 if (juegos.isEmpty()) {
-                        lblGeneroFavorito.setText("Género más frecuente: (sin datos)");
-                        lblConsolaFavorita.setText("Consola más frecuente: (sin datos)");
-                        lblTotalFisicos.setText("Juegos físicos: 0");
-                        lblTotalDigitales.setText("Juegos digitales: 0");
+                        lblGeneroFavorito.setText(String.format(Mensajes.GENERO_MAS_FRECUENTE, Mensajes.SIN_DATOS));
+                        lblConsolaFavorita.setText(String.format(Mensajes.CONSOLA_MAS_FRECUENTE, Mensajes.SIN_DATOS));
+                        lblTotalFisicos.setText(String.format(Mensajes.JUEGOS_FISICOS, 0));
+                        lblTotalDigitales.setText(String.format(Mensajes.JUEGOS_DIGITALES, 0));
+
                         return;
                 }
 
@@ -74,10 +76,11 @@ public class EstadisticasControlador {
                 long totalFisicos = juegos.stream().filter(uv -> uv.getVideojuego().isEsFisico()).count();
                 long totalDigitales = juegos.size() - totalFisicos;
 
-                lblGeneroFavorito.setText("Género más frecuente: " + obtenerMasFrecuente(generos));
-                lblConsolaFavorita.setText("Consola más frecuente: " + obtenerMasFrecuente(consolas));
-                lblTotalFisicos.setText("Juegos físicos: " + totalFisicos);
-                lblTotalDigitales.setText("Juegos digitales: " + totalDigitales);
+                lblGeneroFavorito.setText(String.format(Mensajes.GENERO_MAS_FRECUENTE, obtenerMasFrecuente(generos)));
+                lblConsolaFavorita
+                                .setText(String.format(Mensajes.CONSOLA_MAS_FRECUENTE, obtenerMasFrecuente(consolas)));
+                lblTotalFisicos.setText(String.format(Mensajes.JUEGOS_FISICOS, totalFisicos));
+                lblTotalDigitales.setText(String.format(Mensajes.JUEGOS_DIGITALES, totalDigitales));
 
                 List<PieChart.Data> datosGeneros = generos.entrySet().stream()
                                 .map(e -> new PieChart.Data(e.getKey(), e.getValue()))
@@ -85,7 +88,7 @@ public class EstadisticasControlador {
                 graficoGeneros.setData(javafx.collections.FXCollections.observableArrayList(datosGeneros));
 
                 XYChart.Series<String, Number> serieConsolas = new XYChart.Series<>();
-                serieConsolas.setName("Consolas");
+                serieConsolas.setName(Mensajes.CONSOLA2);
                 consolas.forEach((nombre, cantidad) -> serieConsolas.getData()
                                 .add(new XYChart.Data<>(nombre, cantidad)));
 
@@ -97,7 +100,7 @@ public class EstadisticasControlador {
                 return mapa.entrySet().stream()
                                 .max(Map.Entry.comparingByValue())
                                 .map(Map.Entry::getKey)
-                                .orElse("(sin datos)");
+                                .orElse(Mensajes.SIN_DATOS);
         }
 
         @FXML
@@ -107,7 +110,7 @@ public class EstadisticasControlador {
                 FXMLSoporte.abrirEInicializar(
                                 applicationContext,
                                 RutaFXML.BIBLIOTECA,
-                                "Biblioteca",
+                                Mensajes.TITULO_BIBLIOTECA,
                                 stageActual,
                                 (BibliotecaControlador controlador) -> controlador.inicializarBiblioteca());
         }

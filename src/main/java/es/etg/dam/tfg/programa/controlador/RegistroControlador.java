@@ -3,6 +3,7 @@ package es.etg.dam.tfg.programa.controlador;
 import es.etg.dam.tfg.programa.modelo.Usuario;
 import es.etg.dam.tfg.programa.servicio.UsuarioServicio;
 import es.etg.dam.tfg.programa.utils.FXMLSoporte;
+import es.etg.dam.tfg.programa.utils.Mensajes;
 import es.etg.dam.tfg.programa.utils.RutaFXML;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -10,16 +11,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class RegistroControlador {
-
-    private static final Logger logger = LoggerFactory.getLogger(RegistroControlador.class);
 
     @FXML
     private TextField txtNombreUsuario;
@@ -53,21 +50,18 @@ public class RegistroControlador {
 
         try {
             usuarioServicio.registrarUsuario(nuevoUsuario, pass2);
-            logger.info("Usuario registrado: {}", nombre);
             volverALogin(event);
         } catch (IllegalArgumentException e) {
             mostrarError(e.getMessage());
-            logger.error("Error de validación al registrar usuario", e);
         } catch (Exception e) {
-            mostrarError("Error al registrar usuario: " + e.getMessage());
-            logger.error("Error inesperado al registrar usuario", e);
+            mostrarError(Mensajes.REGISTRO_ERROR_GENERAL + e.getMessage());
         }
     }
 
     @FXML
     public void volverALogin(ActionEvent event) {
         Stage stage = (Stage) ((Control) event.getSource()).getScene().getWindow();
-        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.LOGIN, "Iniciar sesión", stage);
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.LOGIN, Mensajes.TITULO_INICIO_SESION, stage);
     }
 
     private void mostrarError(String mensaje) {

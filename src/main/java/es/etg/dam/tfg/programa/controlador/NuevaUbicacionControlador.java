@@ -2,6 +2,7 @@ package es.etg.dam.tfg.programa.controlador;
 
 import es.etg.dam.tfg.programa.modelo.Ubicacion;
 import es.etg.dam.tfg.programa.servicio.UbicacionServicio;
+import es.etg.dam.tfg.programa.utils.Mensajes;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -34,7 +35,7 @@ public class NuevaUbicacionControlador {
         String indicaciones = txtIndicaciones.getText().trim();
 
         if (lugar.isEmpty()) {
-            lblError.setText("El lugar es obligatorio.");
+            lblError.setText(Mensajes.LUGAR_OBLIGATORIO);
             return;
         }
 

@@ -33,7 +33,6 @@ public class BibliotecaControlador {
     private final UsuarioVideojuegoServicio usuarioVideojuegoServicio;
     private final ApplicationContext applicationContext;
 
-
     private Paginador<Videojuego> paginador;
 
     @FXML
@@ -78,7 +77,7 @@ public class BibliotecaControlador {
 
     private void inicializarCombos() {
         comboOrden.getItems().clear();
-        comboOrden.getItems().addAll("Nombre A-Z", "Nombre Z-A", "Fecha más reciente", "Fecha más antigua");
+        comboOrden.getItems().addAll(Mensajes.FILTRO_BIBLIOTECA_A_Z, Mensajes.FILTRO_BIBLIOTECA_Z_A, Mensajes.FILTRO_BIBLIOTECA_RECIENTE, Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
         comboOrden.getSelectionModel().selectFirst();
 
         List<String> nombresConsolas = consolaServicio.obtenerTodas().stream()
@@ -89,8 +88,8 @@ public class BibliotecaControlador {
                 .map(Genero::getNombre)
                 .collect(Collectors.toList());
 
-        ComboUtils.cargarComboConNombres(comboConsola, "Todas", nombresConsolas);
-        ComboUtils.cargarComboConNombres(comboGenero, "Todos", nombresGeneros);
+        ComboUtils.cargarComboConNombres(comboConsola, Mensajes.TODAS, nombresConsolas);
+        ComboUtils.cargarComboConNombres(comboGenero, Mensajes.TODOS, nombresGeneros);
     }
 
     @FXML
@@ -101,8 +100,8 @@ public class BibliotecaControlador {
         String genero = comboGenero.getValue();
         String nombreConsola = comboConsola.getValue();
 
-        genero = "Todos".equals(genero) ? null : genero;
-        nombreConsola = "Todas".equals(nombreConsola) ? null : nombreConsola;
+        genero = Mensajes.TODOS.equals(genero) ? null : genero;
+        nombreConsola = Mensajes.TODAS.equals(nombreConsola) ? null : nombreConsola;
 
         List<Videojuego> juegosFiltrados = FiltroVideojuego.filtrarYOrdenar(
                 cargarJuegosUsuario(), nombre, nombreConsola, genero, orden);
@@ -112,21 +111,25 @@ public class BibliotecaControlador {
     }
 
     private List<Videojuego> cargarJuegosUsuario() {
-    var usuario = Sesion.getUsuarioActual();
-    if (usuario == null)
-        return Collections.emptyList();
+        var usuario = Sesion.getUsuarioActual();
+        if (usuario == null)
+            return Collections.emptyList();
 
-    return usuarioVideojuegoServicio
-            .obtenerVideojuegosPorUsuario(usuario.getId())
-            .stream()
-            .filter(uv -> !uv.isEnWishlist())
-            .map(UsuarioVideojuego::getVideojuego)
-            .toList();
-}
-
+        return usuarioVideojuegoServicio
+                .obtenerVideojuegosPorUsuario(usuario.getId())
+                .stream()
+                .filter(uv -> !uv.isEnWishlist())
+                .map(UsuarioVideojuego::getVideojuego)
+                .toList();
+    }
 
     private void mostrarJuegos() {
         List<Videojuego> juegos = cargarJuegosUsuario();
+        if (juegos.isEmpty()) {
+            contenedorResultados.getChildren().clear();
+            contenedorResultados.getChildren().add(new Label(Mensajes.SIN_RESULTADOS));
+            return;
+        }
         paginador = new Paginador<>(juegos, 10);
         mostrarPaginaActual();
     }
@@ -137,7 +140,7 @@ public class BibliotecaControlador {
             contenedorResultados.getChildren().add(crearFichaJuego(juego));
         }
 
-        lblPagina.setText("Página " + paginador.getPaginaActualNumero() + " de " + paginador.getTotalPaginas());
+        lblPagina.setText(Mensajes.PAGINA + paginador.getPaginaActualNumero() + Mensajes.DE + paginador.getTotalPaginas());
         btnAnterior.setDisable(!paginador.puedeIrAnterior());
         btnSiguiente.setDisable(!paginador.puedeIrSiguiente());
     }
@@ -156,7 +159,7 @@ public class BibliotecaControlador {
 
     private VBox crearFichaJuego(Videojuego juego) {
         VBox ficha = new VBox(5);
-        ficha.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-background-color: #f9f9f9; -fx-padding: 10;");
+        ficha.setStyle(Mensajes.ESTILO_FICHA);
 
         ImageView portada = new ImageView();
         portada.setFitWidth(100);
@@ -164,13 +167,13 @@ public class BibliotecaControlador {
         portada.setPreserveRatio(true);
         ImagenUtils.cargarImagen(portada, juego.getPortadaUrl());
 
-        Label lblNombre = new Label("Nombre: " + juego.getNombre());
-        Label lblConsolas = new Label("Consolas: " + TextoUtils.obtenerNombres(juego.getConsolas()));
-        Label lblGeneros = new Label("Géneros: " + TextoUtils.obtenerNombres(juego.getGeneros()));
-        Label lblEmpresa = new Label("Empresa: " +
-                Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse("N/A"));
+        Label lblNombre = new Label(Mensajes.NOMBRE + juego.getNombre());
+        Label lblConsolas = new Label(Mensajes.CONSOLA + TextoUtils.obtenerNombres(juego.getConsolas()));
+        Label lblGeneros = new Label(Mensajes.GENERO + TextoUtils.obtenerNombres(juego.getGeneros()));
+        Label lblEmpresa = new Label(Mensajes.EMPRESA +
+                Optional.ofNullable(juego.getCompania()).map(c -> c.getNombre()).orElse(Mensajes.VACIO));
 
-        Button btnEliminar = new Button("Eliminar");
+        Button btnEliminar = new Button(Mensajes.ELIMINAR);
         btnEliminar.setOnAction(e -> eliminarJuego(juego));
 
         ficha.getChildren().addAll(portada, lblNombre, lblConsolas, lblGeneros, lblEmpresa, btnEliminar);
@@ -191,13 +194,13 @@ public class BibliotecaControlador {
 
     @FXML
     private void abrirFormularioAgregarJuego() {
-        FXMLSoporte.abrirVentana(applicationContext, "/vista/pantalla_busqueda.fxml", "Agregar juegos",
+        FXMLSoporte.abrirVentana(applicationContext, /*"/vista/pantalla_busqueda.fxml"*/RutaFXML.BUSQUEDA, Mensajes.TITULO_AGREGAR_JUEGOS,
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
     @FXML
     private void abrirEstadisticas() {
-        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.ESTADISTICAS, "Estadísticas",
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.ESTADISTICAS, Mensajes.TITULO_ESTADISTICAS,
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
@@ -213,14 +216,14 @@ public class BibliotecaControlador {
     @FXML
     private void cerrarSesion() {
         Sesion.cerrarSesion();
-        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.LOGIN, "Iniciar sesión",
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.LOGIN, Mensajes.TITULO_INICIO_SESION,
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
     @FXML
     private void abrirWishlist() {
-        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.WISHLIST, "Wishlist", 
-            (Stage) contenedorResultados.getScene().getWindow());
+        FXMLSoporte.abrirVentana(applicationContext, RutaFXML.WISHLIST, Mensajes.TITULO_WISHLIST,
+                (Stage) contenedorResultados.getScene().getWindow());
     }
 
     @FXML
@@ -232,13 +235,13 @@ public class BibliotecaControlador {
 
         List<Videojuego> juegosUsuario = cargarJuegosUsuario();
         if (juegosUsuario.isEmpty()) {
-            FXMLSoporte.mostrarError("La biblioteca está vacía.");
+            FXMLSoporte.mostrarError(Mensajes.BIBLIOTECA_VACIA);
             return;
         }
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Biblioteca como PDF");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf"));
+        fileChooser.setTitle(Mensajes.GUARDAR_BIBLIOTECA_PDF);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(/*Archivos PDF (*.pdf)"*/Mensajes.DESCRIPCION_PDF, Mensajes.EXTENSION_PDF/*"*.pdf"*/));
         File archivoGuardar = fileChooser.showSaveDialog(contenedorResultados.getScene().getWindow());
 
         if (archivoGuardar != null) {
@@ -247,7 +250,7 @@ public class BibliotecaControlador {
                         archivoGuardar);
             } catch (Exception e) {
                 e.printStackTrace();
-                FXMLSoporte.mostrarError("Error al exportar el PDF.");
+                FXMLSoporte.mostrarError(Mensajes.ERROR_EXPORTAR_PDF);
             }
         }
     }
