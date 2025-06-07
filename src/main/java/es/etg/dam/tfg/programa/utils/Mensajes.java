@@ -89,6 +89,7 @@ public class Mensajes {
     public static final String EMPRESA = "Empresa: ";
     public static final String VACIO = "N/A";
     public static final String ESTILO_FICHA = "-fx-border-color: #ccc; -fx-border-width: 1; -fx-background-color: #f9f9f9; -fx-padding: 10;";
+    public static final String ESTILO_BUSQUEDA_SIN_RESULTADOS = "-fx-font-size: 14px; -fx-text-fill: #666; -fx-padding: 10;";
     public static final String PAGINA = "Página ";
     public static final String DE = " de ";
     public static final String TODOS = "Todos";

@@ -45,6 +45,7 @@
             <padding>
                 <Insets top="10" bottom="10" left="10" right="10"/>
             </padding>
+            <Label fx:id="lblSinResultadosApi" text="No se encontraron juegos con los filtros aplicados." visible="false" style="-fx-font-size: 16px; -fx-text-fill: gray; -fx-alignment: center;" />
         </VBox>
     </ScrollPane>
 

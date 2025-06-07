@@ -57,6 +57,8 @@ public class ControladorBusqueda {
     private MenuItem menuVolverBiblioteca;
     @FXML
     private Menu menuCuenta;
+    @FXML
+    private Label lblSinResultadosApi;
 
     @FXML
     public void initialize() {
@@ -65,7 +67,8 @@ public class ControladorBusqueda {
         cargarPlataformas();
         cargarGeneros();
 
-        comboOrdenApi.getItems().addAll(Mensajes.NINGUNO, Mensajes.FILTRO_BIBLIOTECA_RECIENTE, Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
+        comboOrdenApi.getItems().addAll(Mensajes.NINGUNO, Mensajes.FILTRO_BIBLIOTECA_RECIENTE,
+                Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
         comboOrdenApi.getSelectionModel().selectFirst();
 
         btnBuscarApi.setOnAction(this::buscarJuegos);
@@ -73,7 +76,8 @@ public class ControladorBusqueda {
 
     private void cargarPlataformas() {
         try {
-            JsonNode plataformas = rawgApiServicio.consumirApi(Mensajes.ENLACE_PLATAFORMAS).get(Mensajes.API_RESULTADOS);
+            JsonNode plataformas = rawgApiServicio.consumirApi(Mensajes.ENLACE_PLATAFORMAS)
+                    .get(Mensajes.API_RESULTADOS);
             comboConsolaApi.getItems().clear();
             comboConsolaApi.getItems().add(Mensajes.TODAS);
 
@@ -121,7 +125,8 @@ public class ControladorBusqueda {
         String ordenSeleccionado = comboOrdenApi.getValue();
 
         Integer generoId = Mensajes.TODOS.equals(generoSeleccionado) ? null : mapaGeneros.get(generoSeleccionado);
-        Integer plataformaId = Mensajes.TODAS.equals(consolaSeleccionada) ? null : mapaConsolas.get(consolaSeleccionada);
+        Integer plataformaId = Mensajes.TODAS.equals(consolaSeleccionada) ? null
+                : mapaConsolas.get(consolaSeleccionada);
         String ordenFinal = Mensajes.NINGUNO.equals(ordenSeleccionado) ? null : ordenSeleccionado;
 
         try {
@@ -147,7 +152,8 @@ public class ControladorBusqueda {
 
                 listaJuegos.sort(
                         Comparator
-                                .comparing((JsonNode j) -> !j.get(Mensajes.API_NOMBRE).asText().toLowerCase().contains(nombre))
+                                .comparing((JsonNode j) -> !j.get(Mensajes.API_NOMBRE).asText().toLowerCase()
+                                        .contains(nombre))
 
                                 .thenComparing((JsonNode j1, JsonNode j2) -> {
                                     if (Mensajes.FILTRO_BIBLIOTECA_RECIENTE.equals(ordenSeleccionado)) {
@@ -159,20 +165,20 @@ public class ControladorBusqueda {
                                 }));
 
                 if (listaJuegos.isEmpty()) {
-                    contenedorResultadosApi.getChildren()
-                            .add(new Label(Mensajes.SIN_RESULTADOS));
+                    VistaUtils.mostrarSinResultados(contenedorResultadosApi, lblSinResultadosApi);
                 } else {
+                    lblSinResultadosApi.setVisible(false);
                     listaJuegos.forEach(j -> contenedorResultadosApi.getChildren().add(crearFichaJuego(j)));
                 }
 
             } else {
-                contenedorResultadosApi.getChildren()
-                        .add(new Label(Mensajes.SIN_RESULTADOS));
+                VistaUtils.mostrarSinResultados(contenedorResultadosApi, lblSinResultadosApi);
             }
 
             lblPaginaApi.setText(Mensajes.PAGINA + paginaActualApi);
             btnAnteriorApi.setDisable(paginaActualApi == 1);
-            btnSiguienteApi.setDisable(!respuesta.has(Mensajes.API_SIGUIENTE) || respuesta.get(Mensajes.API_SIGUIENTE).isNull());
+            btnSiguienteApi.setDisable(
+                    !respuesta.has(Mensajes.API_SIGUIENTE) || respuesta.get(Mensajes.API_SIGUIENTE).isNull());
 
         } catch (IOException | InterruptedException e) {
             AlertaUtils.mostrarAlerta(Mensajes.ERROR_CARGAR_RESULTADOS + e.getMessage());
@@ -263,7 +269,8 @@ public class ControladorBusqueda {
                     fecha);
 
             Optional<UsuarioVideojuego> uvOpt = existente.flatMap(
-                    v -> usuarioVideojuegoServicio.obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())));
+                    v -> usuarioVideojuegoServicio
+                            .obtenerVideojuegoPorId(new UsuarioVideojuegoID(usuario.getId(), v.getId())));
 
             if (uvOpt.isPresent()) {
                 UsuarioVideojuego relacion = uvOpt.get();
@@ -459,7 +466,8 @@ public class ControladorBusqueda {
             JsonNode juegoCompleto = rawgApiServicio
                     .consumirApi(Mensajes.ENLACE_JUEGOS + temp.json().get(Mensajes.API_ID).asInt());
 
-            if (juegoCompleto.has(Mensajes.API_DESARROLLADORES) && juegoCompleto.get(Mensajes.API_DESARROLLADORES).isArray()) {
+            if (juegoCompleto.has(Mensajes.API_DESARROLLADORES)
+                    && juegoCompleto.get(Mensajes.API_DESARROLLADORES).isArray()) {
                 for (JsonNode dev : juegoCompleto.get(Mensajes.API_DESARROLLADORES)) {
                     if (dev.hasNonNull(Mensajes.API_NOMBRE)) {
                         String nombre = dev.get(Mensajes.API_NOMBRE).asText();

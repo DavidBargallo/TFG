@@ -51,6 +51,8 @@ public class BibliotecaControlador {
     private Label lblPagina;
     @FXML
     private Menu menuCuenta;
+    @FXML
+    private Label lblSinResultados;
 
     @FXML
     public void initialize() {
@@ -77,7 +79,8 @@ public class BibliotecaControlador {
 
     private void inicializarCombos() {
         comboOrden.getItems().clear();
-        comboOrden.getItems().addAll(Mensajes.FILTRO_BIBLIOTECA_A_Z, Mensajes.FILTRO_BIBLIOTECA_Z_A, Mensajes.FILTRO_BIBLIOTECA_RECIENTE, Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
+        comboOrden.getItems().addAll(Mensajes.FILTRO_BIBLIOTECA_A_Z, Mensajes.FILTRO_BIBLIOTECA_Z_A,
+                Mensajes.FILTRO_BIBLIOTECA_RECIENTE, Mensajes.FILTRO_BIBLIOTECA_ANTIGUA);
         comboOrden.getSelectionModel().selectFirst();
 
         List<String> nombresConsolas = consolaServicio.obtenerTodas().stream()
@@ -126,8 +129,7 @@ public class BibliotecaControlador {
     private void mostrarJuegos() {
         List<Videojuego> juegos = cargarJuegosUsuario();
         if (juegos.isEmpty()) {
-            contenedorResultados.getChildren().clear();
-            contenedorResultados.getChildren().add(new Label(Mensajes.SIN_RESULTADOS));
+            VistaUtils.mostrarSinResultados(contenedorResultados, lblSinResultados);
             return;
         }
         paginador = new Paginador<>(juegos, 10);
@@ -136,11 +138,21 @@ public class BibliotecaControlador {
 
     private void mostrarPaginaActual() {
         contenedorResultados.getChildren().clear();
-        for (Videojuego juego : paginador.getPaginaActual()) {
+
+        List<Videojuego> juegosPagina = paginador.getPaginaActual();
+        if (juegosPagina.isEmpty()) {
+            lblSinResultados.setVisible(true);
+            contenedorResultados.getChildren().add(lblSinResultados);
+            return;
+        }
+
+        lblSinResultados.setVisible(false);
+        for (Videojuego juego : juegosPagina) {
             contenedorResultados.getChildren().add(crearFichaJuego(juego));
         }
 
-        lblPagina.setText(Mensajes.PAGINA + paginador.getPaginaActualNumero() + Mensajes.DE + paginador.getTotalPaginas());
+        lblPagina.setText(
+                Mensajes.PAGINA + paginador.getPaginaActualNumero() + Mensajes.DE + paginador.getTotalPaginas());
         btnAnterior.setDisable(!paginador.puedeIrAnterior());
         btnSiguiente.setDisable(!paginador.puedeIrSiguiente());
     }
@@ -194,7 +206,8 @@ public class BibliotecaControlador {
 
     @FXML
     private void abrirFormularioAgregarJuego() {
-        FXMLSoporte.abrirVentana(applicationContext, /*"/vista/pantalla_busqueda.fxml"*/RutaFXML.BUSQUEDA, Mensajes.TITULO_AGREGAR_JUEGOS,
+        FXMLSoporte.abrirVentana(applicationContext, /* "/vista/pantalla_busqueda.fxml" */RutaFXML.BUSQUEDA,
+                Mensajes.TITULO_AGREGAR_JUEGOS,
                 (Stage) contenedorResultados.getScene().getWindow());
     }
 
@@ -241,7 +254,8 @@ public class BibliotecaControlador {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(Mensajes.GUARDAR_BIBLIOTECA_PDF);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(/*Archivos PDF (*.pdf)"*/Mensajes.DESCRIPCION_PDF, Mensajes.EXTENSION_PDF/*"*.pdf"*/));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(
+                /* Archivos PDF (*.pdf)" */Mensajes.DESCRIPCION_PDF, Mensajes.EXTENSION_PDF/* "*.pdf" */));
         File archivoGuardar = fileChooser.showSaveDialog(contenedorResultados.getScene().getWindow());
 
         if (archivoGuardar != null) {
